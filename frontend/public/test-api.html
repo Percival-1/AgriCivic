@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0284c7;
+        }
+
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .error {
+            background: #fee;
+            color: #c00;
+        }
+
+        .success {
+            background: #efe;
+            color: #060;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>API Connection Test</h1>
+
+    <div class="test-section">
+        <h2>1. Test Backend Connection</h2>
+        <button onclick="testBackend()">Test Backend</button>
+        <div id="backend-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Registration Endpoint</h2>
+        <button onclick="testRegister()">Test Register</button>
+        <div id="register-result" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+
+        async function testBackend() {
+            const resultDiv = document.getElementById('backend-result');
+            resultDiv.textContent = 'Testing...';
+            resultDiv.className = 'result';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/`);
+                const data = await response.json();
+                resultDiv.textContent = `✓ Backend is running!\n\n${JSON.stringify(data, null, 2)}`;
+                resultDiv.className = 'result success';
+            } catch (error) {
+                resultDiv.textContent = `✗ Error: ${error.message}\n\nMake sure the backend is running on ${API_BASE_URL}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function testRegister() {
+            const resultDiv = document.getElementById('register-result');
+            resultDiv.textContent = 'Testing registration...';
+            resultDiv.className = 'result';
+
+            const testData = {
+                phone_number: `+${Date.now().toString().slice(-10)}`,
+                password: 'Test1234',
+                name: 'Test User',
+                preferred_language: 'en'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.textContent = `✓ Registration successful!\n\nRequest:\n${JSON.stringify(testData, null, 2)}\n\nResponse:\n${JSON.stringify(data, null, 2)}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = `✗ Registration failed (${response.status})\n\nRequest:\n${JSON.stringify(testData, null, 2)}\n\nResponse:\n${JSON.stringify(data, null, 2)}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `✗ Network Error: ${error.message}\n\nThis usually means:\n1. Backend is not running\n2. CORS is blocking the request\n3. Wrong URL\n\nRequest was sent to: ${API_BASE_URL}/api/v1/auth/register`;
+                resultDiv.className = 'result error';
+            }
+        }
+    </script>
+</body>
+
+</html>
