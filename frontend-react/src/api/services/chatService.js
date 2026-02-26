@@ -31,9 +31,10 @@ class ChatService extends BaseService {
      * @param {string} sessionId - Session ID
      * @param {string} message - Message text
      * @param {File} image - Optional image file
+     * @param {string} language - User's preferred language (e.g., 'en', 'hi', 'ta')
      * @returns {Promise<object>} Response with message and sources
      */
-    async sendMessage(sessionId, message, image = null) {
+    async sendMessage(sessionId, message, image = null, language = 'en') {
         if (!sessionId) {
             throw new Error('Session ID is required')
         }
@@ -47,6 +48,7 @@ class ChatService extends BaseService {
             const formData = new FormData()
             formData.append('session_id', sessionId)
             formData.append('message', message || '')
+            formData.append('language', language)
             formData.append('image', image)
 
             return await this.post('/api/v1/chat/message', formData, {
@@ -56,11 +58,11 @@ class ChatService extends BaseService {
             })
         }
 
-        // Text-only message - match Vue implementation exactly
+        // Text-only message - pass user's language
         return await this.post('/api/v1/chat/message', {
             session_id: sessionId,
             message,
-            language: 'en'  // Add language parameter like Vue does
+            language
         })
     }
 

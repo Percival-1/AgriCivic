@@ -64,11 +64,26 @@ export const ENDPOINTS = {
         VOICES: '/speech/voices',
     },
 
+    // Translation
+    TRANSLATION: {
+        TRANSLATE: '/translation/translate',
+        BATCH: '/translation/batch',
+        DETECT: '/translation/detect',
+        LANGUAGES: '/translation/languages',
+    },
+
     // Admin
     ADMIN: {
         USERS: '/admin/users',
-        MONITORING: '/admin/monitoring',
+        MONITORING: '/api/v1/monitoring',
         CACHE: '/admin/cache',
         PERFORMANCE: '/admin/performance',
+    },
+
+    // Cache
+    CACHE: {
+        METRICS: '/api/v1/cache/metrics',
+        INVALIDATE: '/api/v1/cache/invalidate',
+        HEALTH: '/api/v1/cache/health',
     },
 }

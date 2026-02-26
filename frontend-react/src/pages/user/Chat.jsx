@@ -141,8 +141,13 @@ export default function Chat() {
             };
             setMessages(prev => [...prev, userMessage]);
 
-            // Send to backend
-            const response = await chatService.sendMessage(sessionId, message, image);
+            // Send to backend with user's preferred language
+            const response = await chatService.sendMessage(
+                sessionId,
+                message,
+                image,
+                user?.preferred_language || 'en'
+            );
             console.log('=== MESSAGE RESPONSE ===');
             console.log('Full response:', response);
             console.log('Content:', response.content);
@@ -304,6 +309,7 @@ export default function Chat() {
                     <ChatInput
                         onSendMessage={handleSendMessage}
                         disabled={!sessionId || loading || isSending}
+                        language={user?.preferred_language || 'en'}
                     />
                 </>
             )}

@@ -57,12 +57,15 @@ export const useAuth = () => {
             // Call authentication service (Requirement 1.1)
             const response = await authService.login(phoneNumber, password);
 
-            // Extract token and user data
+            // Extract token
             const token = response.access_token;
-            const userData = response.user || response;
 
             // Calculate token expiry if provided
             const expiresIn = response.expires_in;
+
+            // Fetch current user data to get role and other details
+            const userResponse = await authService.getCurrentUser();
+            const userData = userResponse.user || userResponse;
 
             // Dispatch login action to update Redux store
             dispatch(loginAction({
@@ -78,7 +81,13 @@ export const useAuth = () => {
                 // Redirect to profile completion if profile is incomplete (Requirement 1.9)
                 navigate('/profile-completion');
             } else {
-                navigate('/dashboard');
+                // Check if user is admin and redirect accordingly
+                const isAdmin = userData.role === 'admin' || userData.is_admin === true;
+                if (isAdmin) {
+                    navigate('/admin/dashboard');
+                } else {
+                    navigate('/dashboard');
+                }
             }
 
             return { success: true, user: userData };
@@ -111,12 +120,15 @@ export const useAuth = () => {
             // Call registration service (Requirement 1.2)
             const response = await authService.register(userData);
 
-            // Extract token and user data
+            // Extract token
             const token = response.access_token;
-            const user = response.user || response;
 
             // Calculate token expiry if provided
             const expiresIn = response.expires_in;
+
+            // Fetch current user data to get role and other details
+            const userResponse = await authService.getCurrentUser();
+            const user = userResponse.user || userResponse;
 
             // Dispatch login action to update Redux store
             dispatch(loginAction({

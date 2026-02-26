@@ -50,10 +50,12 @@ class SchemeService extends BaseService {
         // Build user profile from provided data
         const profileData = userProfile ? {
             user_id: userProfile.id || 'anonymous',
-            location: userProfile.location ? {
-                state: userProfile.state,
-                district: userProfile.district,
-                address: userProfile.location
+            location: (userProfile.state || userProfile.district || userProfile.location_address) ? {
+                state: userProfile.state || '',
+                district: userProfile.district || '',
+                address: userProfile.location_address || userProfile.location || '',
+                latitude: userProfile.location_lat || null,
+                longitude: userProfile.location_lng || null
             } : null,
             crops: userProfile.crops || null,
             land_size_hectares: userProfile.land_size || userProfile.landSize || null,
@@ -97,10 +99,12 @@ class SchemeService extends BaseService {
         // Build user profile
         const profileData = {
             user_id: userProfile.id || 'anonymous',
-            location: userProfile.location ? {
-                state: userProfile.state,
-                district: userProfile.district,
-                address: userProfile.location
+            location: (userProfile.state || userProfile.district || userProfile.location_address) ? {
+                state: userProfile.state || '',
+                district: userProfile.district || '',
+                address: userProfile.location_address || userProfile.location || '',
+                latitude: userProfile.location_lat || null,
+                longitude: userProfile.location_lng || null
             } : null,
             crops: userProfile.crops || null,
             land_size_hectares: userProfile.land_size || userProfile.landSize || null,

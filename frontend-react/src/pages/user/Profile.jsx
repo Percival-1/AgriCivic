@@ -9,6 +9,7 @@ import { useCurrentUser } from '../../hooks/useCurrentUser';
 import Loader from '../../components/common/Loader';
 import Card from '../../components/common/Card';
 import LocationAutocomplete from '../../components/common/LocationAutocomplete';
+import { indianStates, getDistrictsByState } from '../../data/indianStatesDistricts';
 
 /**
  * Profile Page Component
@@ -30,6 +31,8 @@ export default function Profile() {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
     const [cropInput, setCropInput] = useState('');
+    const [selectedState, setSelectedState] = useState('');
+    const [availableDistricts, setAvailableDistricts] = useState([]);
 
     // Available languages
     const languages = [
@@ -67,6 +70,9 @@ export default function Profile() {
             location: '',
             location_lat: null,
             location_lng: null,
+            location_address: '',
+            district: '',
+            state: '',
             crops: [],
             land_size: '',
             language: 'en'
@@ -75,6 +81,17 @@ export default function Profile() {
 
     // Watch crops field
     const crops = watch('crops');
+    const watchedState = watch('state');
+
+    // Update available districts when state changes
+    useEffect(() => {
+        if (watchedState) {
+            setSelectedState(watchedState);
+            setAvailableDistricts(getDistrictsByState(watchedState));
+        } else {
+            setAvailableDistricts([]);
+        }
+    }, [watchedState]);
 
     // Load profile data into form when profile is available
     useEffect(() => {
@@ -84,10 +101,19 @@ export default function Profile() {
                 location: profile.location || profile.location_address || '',
                 location_lat: profile.location_lat || null,
                 location_lng: profile.location_lng || null,
+                location_address: profile.location_address || '',
+                district: profile.district || '',
+                state: profile.state || '',
                 crops: profile.crops || [],
                 land_size: profile.land_size || '',
                 language: profile.language || profile.preferred_language || 'en'
             });
+
+            // Set initial state and districts
+            if (profile.state) {
+                setSelectedState(profile.state);
+                setAvailableDistricts(getDistrictsByState(profile.state));
+            }
         }
     }, [profile, reset]);
 
@@ -123,15 +149,29 @@ export default function Profile() {
                 language: data.language
             };
 
-            // Add coordinates if available
+            // Add coordinates and location details if available
             if (data.location_lat && data.location_lng) {
                 profileData.location_lat = data.location_lat;
                 profileData.location_lng = data.location_lng;
                 profileData.location_address = data.location;
             }
 
+            // Add district and state if available
+            if (data.district) {
+                profileData.district = data.district;
+            }
+            if (data.state) {
+                profileData.state = data.state;
+            }
+
+            console.log('=== PROFILE SAVE DEBUG ===');
+            console.log('Sending to API:', profileData);
+
             // Call API to update profile
             const response = await userService.updateProfile(profileData);
+
+            console.log('Response from API:', response);
+            console.log('=== END DEBUG ===');
 
             // Update Redux store with new user data
             const updatedUser = response.user || response;
@@ -163,10 +203,20 @@ export default function Profile() {
             setValue('location', locationData.address, { shouldDirty: true });
             setValue('location_lat', locationData.latitude, { shouldDirty: true });
             setValue('location_lng', locationData.longitude, { shouldDirty: true });
+
+            // Also set district and state if available
+            if (locationData.district) {
+                setValue('district', locationData.district, { shouldDirty: true });
+            }
+            if (locationData.state) {
+                setValue('state', locationData.state, { shouldDirty: true });
+            }
         } else {
             setValue('location', '', { shouldDirty: true });
             setValue('location_lat', null, { shouldDirty: true });
             setValue('location_lng', null, { shouldDirty: true });
+            setValue('district', '', { shouldDirty: true });
+            setValue('state', '', { shouldDirty: true });
         }
     };
 
@@ -180,6 +230,9 @@ export default function Profile() {
                 location: profile.location || profile.location_address || '',
                 location_lat: profile.location_lat || null,
                 location_lng: profile.location_lng || null,
+                location_address: profile.location_address || '',
+                district: profile.district || '',
+                state: profile.state || '',
                 crops: profile.crops || [],
                 land_size: profile.land_size || '',
                 language: profile.language || profile.preferred_language || 'en'
@@ -346,9 +399,19 @@ export default function Profile() {
                             {/* Location */}
                             <div className="flex items-start">
                                 <FaMapMarkerAlt className="h-5 w-5 text-gray-400 mt-1 mr-3" />
-                                <div>
+                                <div className="flex-1">
                                     <p className="text-sm font-medium text-gray-500">Location</p>
-                                    <p className="text-base text-gray-900">{profile.location || 'Not provided'}</p>
+                                    <p className="text-base text-gray-900">{profile.location || profile.location_address || 'Not provided'}</p>
+                                    {(profile.district || profile.state) && (
+                                        <p className="text-sm text-gray-600 mt-1">
+                                            {[profile.district, profile.state].filter(Boolean).join(', ')}
+                                        </p>
+                                    )}
+                                    {(profile.location_lat && profile.location_lng) && (
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Coordinates: {profile.location_lat}, {profile.location_lng}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
@@ -460,6 +523,57 @@ export default function Profile() {
                                         />
                                     )}
                                 />
+                            </div>
+
+                            {/* State Field */}
+                            <div>
+                                <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
+                                    State
+                                </label>
+                                <select
+                                    id="state"
+                                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                    {...register('state', {
+                                        onChange: (e) => {
+                                            const newState = e.target.value;
+                                            setSelectedState(newState);
+                                            setAvailableDistricts(getDistrictsByState(newState));
+                                            // Clear district when state changes
+                                            setValue('district', '');
+                                        }
+                                    })}
+                                >
+                                    <option value="">Select State</option>
+                                    {indianStates.map((state) => (
+                                        <option key={state} value={state}>
+                                            {state}
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="mt-1 text-xs text-gray-500">Auto-filled from location or select manually</p>
+                            </div>
+
+                            {/* District Field */}
+                            <div>
+                                <label htmlFor="district" className="block text-sm font-medium text-gray-700 mb-1">
+                                    District
+                                </label>
+                                <select
+                                    id="district"
+                                    disabled={!selectedState}
+                                    className={`appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${!selectedState ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                    {...register('district')}
+                                >
+                                    <option value="">
+                                        {selectedState ? 'Select District' : 'Select State First'}
+                                    </option>
+                                    {availableDistricts.map((district) => (
+                                        <option key={district} value={district}>
+                                            {district}
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="mt-1 text-xs text-gray-500">Auto-filled from location or select manually</p>
                             </div>
 
                             {/* Crops Field */}

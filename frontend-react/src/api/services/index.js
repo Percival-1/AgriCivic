@@ -7,4 +7,7 @@ export { default as marketService } from './marketService';
 export { default as schemeService } from './schemeService';
 export { default as notificationService } from './notificationService';
 export { default as visionService } from './visionService';
+export { default as speechService } from './speechService';
+export { default as adminService } from './adminService';
+export { default as monitoringService } from './monitoringService';
 export { default as BaseService } from './BaseService';

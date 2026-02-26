@@ -10,7 +10,8 @@ import {
     FaArrowDown,
     FaMinus,
     FaFilter,
-    FaSearch
+    FaSearch,
+    FaRoute
 } from 'react-icons/fa';
 import { ClipLoader } from 'react-spinners';
 import { Line } from 'react-chartjs-2';
@@ -31,6 +32,8 @@ import { selectProfile } from '../../store/slices/userSlice';
 import marketService from '../../api/services/marketService';
 import mapsService from '../../api/services/mapsService';
 import { Card, ErrorAlert, Input, Button } from '../../components/common';
+import { GeocodingSearch } from '../../components/maps';
+import { RouteMap } from '../../components/maps';
 
 // Register Chart.js components
 ChartJS.register(
@@ -97,6 +100,10 @@ export default function Market() {
 
     // Tab state
     const [activeTab, setActiveTab] = useState('prices'); // prices, comparison, map, trends, recommendation
+
+    // Route state
+    const [selectedMandiForRoute, setSelectedMandiForRoute] = useState(null);
+    const [showRouteMap, setShowRouteMap] = useState(false);
 
     // Initialize from profile
     useEffect(() => {
@@ -289,6 +296,22 @@ export default function Market() {
     };
 
     /**
+     * Show route to selected mandi
+     */
+    const handleShowRoute = (mandi) => {
+        setSelectedMandiForRoute(mandi);
+        setShowRouteMap(true);
+    };
+
+    /**
+     * Close route map
+     */
+    const handleCloseRoute = () => {
+        setSelectedMandiForRoute(null);
+        setShowRouteMap(false);
+    };
+
+    /**
      * Get price change indicator
      */
     const getPriceChangeIcon = (direction) => {
@@ -402,6 +425,25 @@ export default function Market() {
                     </div>
                 </div>
 
+                {/* Geocoding Search */}
+                <div className="bg-white p-4 rounded-lg border border-gray-200">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <FaSearch className="inline mr-2" />
+                        Search Location by Address
+                    </label>
+                    <GeocodingSearch
+                        onLocationSelect={(location) => {
+                            setCurrentCoordinates({
+                                latitude: location.latitude,
+                                longitude: location.longitude
+                            });
+                            setCurrentLocationName(location.name || location.address);
+                            setSelectedLocation('custom');
+                        }}
+                        placeholder="Search for a location..."
+                    />
+                </div>
+
                 {/* Current Selection Display */}
                 {selectedCrop && currentLocationName && (
                     <div className="bg-green-50 border-l-4 border-green-500 p-3 rounded">
@@ -443,116 +485,64 @@ export default function Market() {
             </div>
 
             {/* Current Prices Tab */}
-            {activeTab === 'prices' && (
-                <Card>
-                    <h2 className="text-xl font-bold mb-4">Current Market Prices</h2>
-                    {loadingPrices ? (
-                        <div className="flex justify-center py-8">
-                            <ClipLoader color="#3B82F6" size={40} />
-                        </div>
-                    ) : currentPrices.length > 0 ? (
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mandi</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price (₹/quintal)</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Change</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {currentPrices.map((price, index) => {
-                                        const change = marketService.getPriceChange(
-                                            price.price_per_quintal,
-                                            price.previous_price
-                                        );
-                                        return (
-                                            <tr key={index}>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                    {price.mandi_name}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    {marketService.formatPrice(price.price_per_quintal)}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                                    <div className="flex items-center gap-2">
-                                                        {getPriceChangeIcon(change.direction)}
-                                                        <span>{change.percentage}%</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {marketService.formatDate(price.date)}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                                    <button
-                                                        onClick={() => toggleFavorite({
-                                                            name: price.mandi_name,
-                                                            location: price.location?.state,
-                                                            ...price.location
-                                                        })}
-                                                        className="text-yellow-500 hover:text-yellow-600"
-                                                    >
-                                                        {marketService.isFavoriteMandi(price.mandi_name) ? (
-                                                            <FaStar />
-                                                        ) : (
-                                                            <FaRegStar />
-                                                        )}
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    ) : (
-                        <p className="text-gray-500 text-center py-8">No price data available</p>
-                    )}
-                </Card>
-            )}
-
-            {/* Price Comparison Tab */}
-            {activeTab === 'comparison' && (
-                <Card>
-                    <h2 className="text-xl font-bold mb-4">Price Comparison Across Mandis</h2>
-                    {loadingComparison ? (
-                        <div className="flex justify-center py-8">
-                            <ClipLoader color="#3B82F6" size={40} />
-                        </div>
-                    ) : priceComparison?.prices && priceComparison.prices.length > 0 ? (
-                        <div>
+            {
+                activeTab === 'prices' && (
+                    <Card>
+                        <h2 className="text-xl font-bold mb-4">Current Market Prices</h2>
+                        {loadingPrices ? (
+                            <div className="flex justify-center py-8">
+                                <ClipLoader color="#3B82F6" size={40} />
+                            </div>
+                        ) : currentPrices.length > 0 ? (
                             <div className="overflow-x-auto">
                                 <table className="min-w-full divide-y divide-gray-200">
                                     <thead className="bg-gray-50">
                                         <tr>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mandi</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price (₹/quintal)</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">vs Average</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Change</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
-                                        {priceComparison.prices.map((comp, index) => {
-                                            const avgDiff = priceComparison.average_price
-                                                ? ((comp.price_per_quintal - priceComparison.average_price) / priceComparison.average_price * 100).toFixed(1)
-                                                : 0;
+                                        {currentPrices.map((price, index) => {
+                                            const change = marketService.getPriceChange(
+                                                price.price_per_quintal,
+                                                price.previous_price
+                                            );
                                             return (
                                                 <tr key={index}>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        {comp.mandi_name}
+                                                        {price.mandi_name}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                        {marketService.formatPrice(comp.price_per_quintal)}
+                                                        {marketService.formatPrice(price.price_per_quintal)}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                                        <span className={avgDiff > 0 ? 'text-green-600' : 'text-red-600'}>
-                                                            {avgDiff > 0 ? '+' : ''}{avgDiff}%
-                                                        </span>
+                                                        <div className="flex items-center gap-2">
+                                                            {getPriceChangeIcon(change.direction)}
+                                                            <span>{change.percentage}%</span>
+                                                        </div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {comp.location?.state || comp.location?.district || 'N/A'}
+                                                        {marketService.formatDate(price.date)}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                        <button
+                                                            onClick={() => toggleFavorite({
+                                                                name: price.mandi_name,
+                                                                location: price.location?.state,
+                                                                ...price.location
+                                                            })}
+                                                            className="text-yellow-500 hover:text-yellow-600"
+                                                        >
+                                                            {marketService.isFavoriteMandi(price.mandi_name) ? (
+                                                                <FaStar />
+                                                            ) : (
+                                                                <FaRegStar />
+                                                            )}
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             );
@@ -560,243 +550,362 @@ export default function Market() {
                                     </tbody>
                                 </table>
                             </div>
-                            {priceComparison.average_price && (
-                                <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                                    <p className="text-sm text-blue-800">
-                                        Average Price: <span className="font-semibold">
-                                            {marketService.formatPrice(priceComparison.average_price)}
-                                        </span>
-                                    </p>
-                                    {priceComparison.recommendation && (
-                                        <p className="text-sm text-blue-700 mt-2">{priceComparison.recommendation}</p>
-                                    )}
+                        ) : (
+                            <p className="text-gray-500 text-center py-8">No price data available</p>
+                        )}
+                    </Card>
+                )
+            }
+
+            {/* Price Comparison Tab */}
+            {
+                activeTab === 'comparison' && (
+                    <Card>
+                        <h2 className="text-xl font-bold mb-4">Price Comparison Across Mandis</h2>
+                        {loadingComparison ? (
+                            <div className="flex justify-center py-8">
+                                <ClipLoader color="#3B82F6" size={40} />
+                            </div>
+                        ) : priceComparison?.prices && priceComparison.prices.length > 0 ? (
+                            <div>
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                        <thead className="bg-gray-50">
+                                            <tr>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mandi</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price (₹/quintal)</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">vs Average</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {priceComparison.prices.map((comp, index) => {
+                                                const avgDiff = priceComparison.average_price
+                                                    ? ((comp.price_per_quintal - priceComparison.average_price) / priceComparison.average_price * 100).toFixed(1)
+                                                    : 0;
+                                                return (
+                                                    <tr key={index}>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                            {comp.mandi_name}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                            {marketService.formatPrice(comp.price_per_quintal)}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                            <span className={avgDiff > 0 ? 'text-green-600' : 'text-red-600'}>
+                                                                {avgDiff > 0 ? '+' : ''}{avgDiff}%
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                            {comp.location?.state || comp.location?.district || 'N/A'}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
                                 </div>
-                            )}
-                        </div>
-                    ) : (
-                        <p className="text-gray-500 text-center py-8">No comparison data available</p>
-                    )}
-                </Card>
-            )}
-
-            {/* Price Trends Tab */}
-            {activeTab === 'trends' && (
-                <Card>
-                    <h2 className="text-xl font-bold mb-4">Price Trends</h2>
-                    {loadingTrends ? (
-                        <div className="flex justify-center py-8">
-                            <ClipLoader color="#3B82F6" size={40} />
-                        </div>
-                    ) : priceTrends && getPriceTrendChartData() ? (
-                        <div className="h-96">
-                            <Line data={getPriceTrendChartData()} options={chartOptions} />
-                        </div>
-                    ) : (
-                        <p className="text-gray-500 text-center py-8">No trend data available</p>
-                    )}
-                </Card>
-            )}
-
-            {/* Nearest Mandis Map Tab */}
-            {activeTab === 'map' && (
-                <Card>
-                    <h2 className="text-xl font-bold mb-4">Nearest Mandis</h2>
-                    {loadingMandis ? (
-                        <div className="flex justify-center py-8">
-                            <ClipLoader color="#3B82F6" size={40} />
-                        </div>
-                    ) : nearestMandis.length > 0 ? (
-                        <div className="space-y-4">
-                            {/* Map */}
-                            <div className="h-96 rounded-lg overflow-hidden">
-                                {currentCoordinates && (
-                                    <MapContainer
-                                        key={`${currentCoordinates.latitude}-${currentCoordinates.longitude}`}
-                                        center={[
-                                            currentCoordinates.latitude,
-                                            currentCoordinates.longitude
-                                        ]}
-                                        zoom={10}
-                                        style={{ height: '100%', width: '100%' }}
-                                    >
-                                        <TileLayer
-                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                        />
-                                        {nearestMandis.map((mandi, index) => {
-                                            // Ensure we have valid coordinates
-                                            const lat = mandi.latitude || mandi.location?.latitude;
-                                            const lng = mandi.longitude || mandi.location?.longitude;
-
-                                            if (!lat || !lng) {
-                                                console.warn('Mandi missing coordinates:', mandi);
-                                                return null;
-                                            }
-
-                                            return (
-                                                <Marker
-                                                    key={index}
-                                                    position={[lat, lng]}
-                                                >
-                                                    <Popup>
-                                                        <div className="p-2">
-                                                            <h3 className="font-bold">{mandi.name || mandi.mandi_name}</h3>
-                                                            <p className="text-sm">{mandi.state || mandi.district}</p>
-                                                            <p className="text-sm text-gray-600">
-                                                                Distance: {mandi.distance_km || mandi.distance ? `${(mandi.distance_km || mandi.distance).toFixed(1)} km` : 'N/A'}
-                                                            </p>
-                                                        </div>
-                                                    </Popup>
-                                                </Marker>
-                                            );
-                                        })}
-                                    </MapContainer>
+                                {priceComparison.average_price && (
+                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                                        <p className="text-sm text-blue-800">
+                                            Average Price: <span className="font-semibold">
+                                                {marketService.formatPrice(priceComparison.average_price)}
+                                            </span>
+                                        </p>
+                                        {priceComparison.recommendation && (
+                                            <p className="text-sm text-blue-700 mt-2">{priceComparison.recommendation}</p>
+                                        )}
+                                    </div>
                                 )}
                             </div>
+                        ) : (
+                            <p className="text-gray-500 text-center py-8">No comparison data available</p>
+                        )}
+                    </Card>
+                )
+            }
 
-                            {/* Mandi List */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {nearestMandis.map((mandi, index) => (
-                                    <div key={index} className="bg-gray-50 p-4 rounded-lg">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <h3 className="font-semibold text-lg">{mandi.name || mandi.mandi_name}</h3>
-                                                <p className="text-sm text-gray-600">{mandi.state || mandi.district}</p>
-                                                <p className="text-sm text-blue-600 mt-2">
-                                                    <FaMapMarkerAlt className="inline mr-1" />
-                                                    {mandi.distance_km || mandi.distance ? `${(mandi.distance_km || mandi.distance).toFixed(1)} km away` : 'Distance N/A'}
-                                                </p>
+            {/* Price Trends Tab */}
+            {
+                activeTab === 'trends' && (
+                    <Card>
+                        <h2 className="text-xl font-bold mb-4">Price Trends</h2>
+                        {loadingTrends ? (
+                            <div className="flex justify-center py-8">
+                                <ClipLoader color="#3B82F6" size={40} />
+                            </div>
+                        ) : priceTrends && getPriceTrendChartData() ? (
+                            <div className="h-96">
+                                <Line data={getPriceTrendChartData()} options={chartOptions} />
+                            </div>
+                        ) : (
+                            <p className="text-gray-500 text-center py-8">No trend data available</p>
+                        )}
+                    </Card>
+                )
+            }
+
+            {/* Nearest Mandis Map Tab */}
+            {
+                activeTab === 'map' && (
+                    <Card>
+                        <h2 className="text-xl font-bold mb-4">Nearest Mandis</h2>
+                        {loadingMandis ? (
+                            <div className="flex justify-center py-8">
+                                <ClipLoader color="#3B82F6" size={40} />
+                            </div>
+                        ) : nearestMandis.length > 0 ? (
+                            <div className="space-y-4">
+                                {/* Map */}
+                                <div className="h-96 rounded-lg overflow-hidden">
+                                    {currentCoordinates && (
+                                        <MapContainer
+                                            key={`${currentCoordinates.latitude}-${currentCoordinates.longitude}`}
+                                            center={[
+                                                currentCoordinates.latitude,
+                                                currentCoordinates.longitude
+                                            ]}
+                                            zoom={10}
+                                            style={{ height: '100%', width: '100%' }}
+                                        >
+                                            <TileLayer
+                                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                            />
+                                            {nearestMandis.map((mandi, index) => {
+                                                // Ensure we have valid coordinates
+                                                const lat = mandi.latitude || mandi.location?.latitude;
+                                                const lng = mandi.longitude || mandi.location?.longitude;
+
+                                                if (!lat || !lng) {
+                                                    console.warn('Mandi missing coordinates:', mandi);
+                                                    return null;
+                                                }
+
+                                                return (
+                                                    <Marker
+                                                        key={index}
+                                                        position={[lat, lng]}
+                                                    >
+                                                        <Popup>
+                                                            <div className="p-2">
+                                                                <h3 className="font-bold">{mandi.name || mandi.mandi_name}</h3>
+                                                                <p className="text-sm">{mandi.state || mandi.district}</p>
+                                                                <p className="text-sm text-gray-600">
+                                                                    Distance: {mandi.distance_km || mandi.distance ? `${(mandi.distance_km || mandi.distance).toFixed(1)} km` : 'N/A'}
+                                                                </p>
+                                                            </div>
+                                                        </Popup>
+                                                    </Marker>
+                                                );
+                                            })}
+                                        </MapContainer>
+                                    )}
+                                </div>
+
+                                {/* Mandi List */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {nearestMandis.map((mandi, index) => (
+                                        <div key={index} className="bg-gray-50 p-4 rounded-lg">
+                                            <div className="flex justify-between items-start mb-3">
+                                                <div className="flex-1">
+                                                    <h3 className="font-semibold text-lg">{mandi.name || mandi.mandi_name}</h3>
+                                                    <p className="text-sm text-gray-600">{mandi.state || mandi.district}</p>
+                                                    <p className="text-sm text-blue-600 mt-2">
+                                                        <FaMapMarkerAlt className="inline mr-1" />
+                                                        {mandi.distance_km || mandi.distance ? `${(mandi.distance_km || mandi.distance).toFixed(1)} km away` : 'Distance N/A'}
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    onClick={() => toggleFavorite(mandi)}
+                                                    className="text-yellow-500 hover:text-yellow-600 text-xl"
+                                                >
+                                                    {marketService.isFavoriteMandi(mandi.name || mandi.mandi_name) ? (
+                                                        <FaStar />
+                                                    ) : (
+                                                        <FaRegStar />
+                                                    )}
+                                                </button>
                                             </div>
                                             <button
-                                                onClick={() => toggleFavorite(mandi)}
-                                                className="text-yellow-500 hover:text-yellow-600 text-xl"
+                                                onClick={() => handleShowRoute(mandi)}
+                                                className="w-full mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
                                             >
-                                                {marketService.isFavoriteMandi(mandi.name || mandi.mandi_name) ? (
-                                                    <FaStar />
-                                                ) : (
-                                                    <FaRegStar />
-                                                )}
+                                                <FaRoute />
+                                                Show Route
                                             </button>
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ) : (
-                        <p className="text-gray-500 text-center py-8">
-                            No mandis found nearby. Try selecting a different location or increasing the search radius.
-                        </p>
-                    )}
-                </Card>
-            )}
+                                    ))}
+                                </div>
+                            </div >
+                        ) : (
+                            <p className="text-gray-500 text-center py-8">
+                                No mandis found nearby. Try selecting a different location or increasing the search radius.
+                            </p>
+                        )}
+                    </Card >
+                )
+            }
 
             {/* Selling Recommendation Tab */}
-            {activeTab === 'recommendation' && (
-                <Card>
-                    <h2 className="text-xl font-bold mb-4">Selling Recommendation</h2>
-                    {loadingRecommendation ? (
-                        <div className="flex justify-center py-8">
-                            <ClipLoader color="#3B82F6" size={40} />
-                        </div>
-                    ) : sellingRecommendation ? (
-                        <div className="space-y-6">
-                            {/* Overall Recommendation */}
-                            {sellingRecommendation.recommendation && (
-                                <div className="bg-green-50 p-6 rounded-lg border-l-4 border-green-500">
-                                    <h3 className="font-bold text-lg text-green-800 mb-2">Recommendation</h3>
-                                    <p className="text-gray-700">{sellingRecommendation.recommendation}</p>
-                                </div>
-                            )}
-
-                            {/* Best Mandis */}
-                            {sellingRecommendation.best_mandis && sellingRecommendation.best_mandis.length > 0 && (
-                                <div>
-                                    <h3 className="font-bold text-lg mb-3">Best Mandis to Sell</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {sellingRecommendation.best_mandis.map((mandi, index) => (
-                                            <div key={index} className="bg-blue-50 p-4 rounded-lg">
-                                                <div className="flex justify-between items-start">
-                                                    <div>
-                                                        <h4 className="font-semibold">{mandi.name}</h4>
-                                                        <p className="text-sm text-gray-600">{mandi.location}</p>
-                                                        <p className="text-lg font-bold text-green-600 mt-2">
-                                                            {marketService.formatPrice(mandi.price)}
-                                                        </p>
-                                                        {mandi.distance && (
-                                                            <p className="text-sm text-gray-600 mt-1">
-                                                                Distance: {mandi.distance} km
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                    <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
-                                                        #{index + 1}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        ))}
+            {
+                activeTab === 'recommendation' && (
+                    <Card>
+                        <h2 className="text-xl font-bold mb-4">Selling Recommendation</h2>
+                        {loadingRecommendation ? (
+                            <div className="flex justify-center py-8">
+                                <ClipLoader color="#3B82F6" size={40} />
+                            </div>
+                        ) : sellingRecommendation ? (
+                            <div className="space-y-6">
+                                {/* Overall Recommendation */}
+                                {sellingRecommendation.recommendation && (
+                                    <div className="bg-green-50 p-6 rounded-lg border-l-4 border-green-500">
+                                        <h3 className="font-bold text-lg text-green-800 mb-2">Recommendation</h3>
+                                        <p className="text-gray-700">{sellingRecommendation.recommendation}</p>
                                     </div>
-                                </div>
-                            )}
+                                )}
 
-                            {/* Timing Advice */}
-                            {sellingRecommendation.timing_advice && (
-                                <div className="bg-yellow-50 p-4 rounded-lg">
-                                    <h3 className="font-bold text-yellow-800 mb-2">Timing Advice</h3>
-                                    <p className="text-gray-700">{sellingRecommendation.timing_advice}</p>
-                                </div>
-                            )}
+                                {/* Best Mandis */}
+                                {sellingRecommendation.best_mandis && sellingRecommendation.best_mandis.length > 0 && (
+                                    <div>
+                                        <h3 className="font-bold text-lg mb-3">Best Mandis to Sell</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {sellingRecommendation.best_mandis.map((mandi, index) => (
+                                                <div key={index} className="bg-blue-50 p-4 rounded-lg">
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <h4 className="font-semibold">{mandi.name}</h4>
+                                                            <p className="text-sm text-gray-600">{mandi.location}</p>
+                                                            <p className="text-lg font-bold text-green-600 mt-2">
+                                                                {marketService.formatPrice(mandi.price)}
+                                                            </p>
+                                                            {mandi.distance && (
+                                                                <p className="text-sm text-gray-600 mt-1">
+                                                                    Distance: {mandi.distance} km
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                        <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
+                                                            #{index + 1}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
 
-                            {/* MSP Information */}
-                            {sellingRecommendation.msp && (
-                                <div className="bg-blue-50 p-4 rounded-lg">
-                                    <h3 className="font-bold text-blue-800 mb-2">Minimum Support Price (MSP)</h3>
-                                    <p className="text-2xl font-bold text-blue-600">
-                                        {marketService.formatPrice(sellingRecommendation.msp)}
-                                    </p>
-                                </div>
-                            )}
+                                {/* Timing Advice */}
+                                {sellingRecommendation.timing_advice && (
+                                    <div className="bg-yellow-50 p-4 rounded-lg">
+                                        <h3 className="font-bold text-yellow-800 mb-2">Timing Advice</h3>
+                                        <p className="text-gray-700">{sellingRecommendation.timing_advice}</p>
+                                    </div>
+                                )}
 
-                            {/* Expected Returns */}
-                            {sellingRecommendation.expected_returns && (
-                                <div className="bg-green-50 p-4 rounded-lg">
-                                    <h3 className="font-bold text-green-800 mb-2">Expected Returns</h3>
-                                    <p className="text-gray-700">{sellingRecommendation.expected_returns}</p>
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <p className="text-gray-500 text-center py-8">No recommendation available</p>
-                    )}
-                </Card>
-            )}
+                                {/* MSP Information */}
+                                {sellingRecommendation.msp && (
+                                    <div className="bg-blue-50 p-4 rounded-lg">
+                                        <h3 className="font-bold text-blue-800 mb-2">Minimum Support Price (MSP)</h3>
+                                        <p className="text-2xl font-bold text-blue-600">
+                                            {marketService.formatPrice(sellingRecommendation.msp)}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Expected Returns */}
+                                {sellingRecommendation.expected_returns && (
+                                    <div className="bg-green-50 p-4 rounded-lg">
+                                        <h3 className="font-bold text-green-800 mb-2">Expected Returns</h3>
+                                        <p className="text-gray-700">{sellingRecommendation.expected_returns}</p>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <p className="text-gray-500 text-center py-8">No recommendation available</p>
+                        )}
+                    </Card>
+                )
+            }
 
             {/* Favorite Mandis */}
-            {favoriteMandis.length > 0 && (
-                <Card>
-                    <h2 className="text-xl font-bold mb-4">
-                        <FaStar className="inline text-yellow-500 mr-2" />
-                        Favorite Mandis
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {favoriteMandis.map((mandi, index) => (
-                            <div key={index} className="bg-yellow-50 p-4 rounded-lg">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <h3 className="font-semibold">{mandi.name}</h3>
-                                        <p className="text-sm text-gray-600">{mandi.location || mandi.mandi}</p>
+            {
+                favoriteMandis.length > 0 && (
+                    <Card>
+                        <h2 className="text-xl font-bold mb-4">
+                            <FaStar className="inline text-yellow-500 mr-2" />
+                            Favorite Mandis
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {favoriteMandis.map((mandi, index) => (
+                                <div key={index} className="bg-yellow-50 p-4 rounded-lg">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h3 className="font-semibold">{mandi.name}</h3>
+                                            <p className="text-sm text-gray-600">{mandi.location || mandi.mandi}</p>
+                                        </div>
+                                        <button
+                                            onClick={() => toggleFavorite(mandi)}
+                                            className="text-yellow-500 hover:text-yellow-600"
+                                        >
+                                            <FaStar />
+                                        </button>
                                     </div>
+                                </div>
+                            ))}
+                        </div>
+                    </Card>
+                )
+            }
+
+            {/* Route Map Modal */}
+            {
+                showRouteMap && selectedMandiForRoute && currentCoordinates && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                            <div className="p-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h2 className="text-2xl font-bold">
+                                        Route to {selectedMandiForRoute.name || selectedMandiForRoute.mandi_name}
+                                    </h2>
                                     <button
-                                        onClick={() => toggleFavorite(mandi)}
-                                        className="text-yellow-500 hover:text-yellow-600"
+                                        onClick={handleCloseRoute}
+                                        className="text-gray-500 hover:text-gray-700 text-2xl"
                                     >
-                                        <FaStar />
+                                        ×
+                                    </button>
+                                </div>
+
+                                <RouteMap
+                                    origin={{
+                                        latitude: currentCoordinates.latitude,
+                                        longitude: currentCoordinates.longitude,
+                                        name: currentLocationName || 'Your Location'
+                                    }}
+                                    destination={{
+                                        latitude: selectedMandiForRoute.latitude || selectedMandiForRoute.location?.latitude,
+                                        longitude: selectedMandiForRoute.longitude || selectedMandiForRoute.location?.longitude,
+                                        name: selectedMandiForRoute.name || selectedMandiForRoute.mandi_name
+                                    }}
+                                    mode="driving"
+                                    showRoute={true}
+                                    height="500px"
+                                />
+
+                                <div className="mt-4 flex justify-end">
+                                    <button
+                                        onClick={handleCloseRoute}
+                                        className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                                    >
+                                        Close
                                     </button>
                                 </div>
                             </div>
-                        ))}
+                        </div>
                     </div>
-                </Card>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }

@@ -31,6 +31,7 @@ export default function LocationAutocomplete({
     const [loading, setLoading] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
+    const [apiError, setApiError] = useState(null);
 
     const wrapperRef = useRef(null);
     const inputRef = useRef(null);
@@ -61,16 +62,69 @@ export default function LocationAutocomplete({
     const fetchSuggestions = async (searchText) => {
         if (!searchText || searchText.length < 2) {
             setSuggestions([]);
+            setApiError(null);
             return;
         }
 
         setLoading(true);
+        setApiError(null);
         try {
             const results = await mapsService.autocomplete(searchText, 5);
-            setSuggestions(results || []);
-            setShowSuggestions(true);
+            console.log('=== AUTOCOMPLETE DEBUG ===');
+            console.log('Raw API results:', results);
+            console.log('Results type:', typeof results);
+            console.log('Is array?:', Array.isArray(results));
+            console.log('Results length:', results?.length);
+
+            if (results && results.length > 0) {
+                console.log('First result:', results[0]);
+                console.log('First result keys:', Object.keys(results[0]));
+                console.log('First result address:', results[0].address);
+                console.log('Address type:', typeof results[0].address);
+                console.log('Address length:', results[0].address?.length);
+            }
+
+            // Check if results are valid (not empty data)
+            const validResults = results.filter(r => {
+                const hasAddress = r.address && r.address.trim() !== '';
+                console.log('Checking result:', r.address, '-> valid?', hasAddress);
+                return hasAddress;
+            });
+
+            console.log('Valid results count:', validResults.length, 'out of', results.length);
+            console.log('=== END DEBUG ===');
+
+            if (validResults.length === 0 && results.length > 0) {
+                // API returned results but they're all empty - likely API key issue
+                console.error('Empty results detected - API key may be invalid');
+                setApiError('Location service is not configured properly. Please contact support.');
+                setSuggestions([]);
+            } else if (validResults.length === 0) {
+                // No results at all
+                setSuggestions([]);
+                setShowSuggestions(false);
+            } else {
+                // Valid results found
+                setSuggestions(validResults);
+                setShowSuggestions(true);
+            }
         } catch (err) {
             console.error('Autocomplete error:', err);
+
+            // Check for specific error messages
+            if (err.response?.data?.detail) {
+                const detail = err.response.data.detail;
+                if (detail.includes('API key') || detail.includes('denied')) {
+                    setApiError('Location service API key is invalid. Please contact administrator.');
+                } else {
+                    setApiError(detail);
+                }
+            } else if (err.message) {
+                setApiError(err.message);
+            } else {
+                setApiError('Unable to fetch location suggestions. Please try again.');
+            }
+
             setSuggestions([]);
         } finally {
             setLoading(false);
@@ -237,8 +291,8 @@ export default function LocationAutocomplete({
                             key={suggestion.place_id || index}
                             onClick={() => handleSelectSuggestion(suggestion)}
                             className={`cursor-pointer select-none relative py-2 pl-3 pr-9 ${index === selectedIndex
-                                    ? 'bg-blue-600 text-white'
-                                    : 'text-gray-900 hover:bg-gray-100'
+                                ? 'bg-blue-600 text-white'
+                                : 'text-gray-900 hover:bg-gray-100'
                                 }`}
                         >
                             <div className="flex items-start">
@@ -264,8 +318,16 @@ export default function LocationAutocomplete({
                 </div>
             )}
 
+            {/* API Error Message */}
+            {apiError && inputValue.length >= 2 && (
+                <div className="absolute z-10 mt-1 w-full bg-red-50 border border-red-200 shadow-lg rounded-md py-2 px-3 text-sm text-red-600">
+                    <div className="font-medium">Error</div>
+                    <div>{apiError}</div>
+                </div>
+            )}
+
             {/* No Results Message */}
-            {showSuggestions && !loading && inputValue.length >= 2 && suggestions.length === 0 && (
+            {!apiError && showSuggestions && !loading && inputValue.length >= 2 && suggestions.length === 0 && (
                 <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md py-2 px-3 text-sm text-gray-500">
                     No locations found. Try a different search term.
                 </div>

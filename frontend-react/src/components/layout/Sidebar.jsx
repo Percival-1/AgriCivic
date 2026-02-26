@@ -19,6 +19,7 @@ import {
     FaSync,
     FaBook,
     FaRobot,
+    FaMapMarkedAlt,
 } from 'react-icons/fa';
 import { selectUser } from '../../store/slices/authSlice';
 import { selectProfile } from '../../store/slices/userSlice';
@@ -84,6 +85,11 @@ export default function Sidebar({ isOpen, onClose }) {
             name: 'Speech Services',
             path: '/speech',
             icon: FaMicrophone,
+        },
+        {
+            name: 'Maps & Location',
+            path: '/maps',
+            icon: FaMapMarkedAlt,
         },
         {
             name: t('profile.profile'),

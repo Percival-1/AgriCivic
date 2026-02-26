@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { sanitizeObject } from '../utils/security'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
@@ -27,7 +28,7 @@ const processQueue = (error, token = null) => {
     failedQueue = []
 }
 
-// Request interceptor - Add JWT token to requests
+// Request interceptor - Add JWT token to requests and sanitize data
 axiosInstance.interceptors.request.use(
     (config) => {
         // Get token from localStorage
@@ -35,6 +36,24 @@ axiosInstance.interceptors.request.use(
 
         if (token) {
             config.headers.Authorization = `Bearer ${token}`
+        }
+
+        // Sanitize request data to prevent XSS
+        // Only sanitize for specific endpoints that accept user input
+        // Exclude authentication, token refresh, and other sensitive endpoints
+        const shouldSanitize = config.url &&
+            !config.url.includes('/auth/') &&
+            !config.url.includes('/token') &&
+            !config.url.includes('/refresh') &&
+            config.method !== 'get'; // Don't sanitize GET requests
+
+        if (shouldSanitize && config.data && typeof config.data === 'object') {
+            // Don't sanitize FormData (used for file uploads)
+            if (!(config.data instanceof FormData)) {
+                // Exclude certain fields that should not be sanitized
+                const excludeKeys = ['password', 'token', 'refresh_token', 'access_token', 'api_key', 'role', 'roles', 'is_admin', 'isAdmin'];
+                config.data = sanitizeObject(config.data, excludeKeys);
+            }
         }
 
         return config

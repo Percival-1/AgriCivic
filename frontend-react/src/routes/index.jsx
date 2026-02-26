@@ -1,4 +1,5 @@
 import { lazy } from 'react';
+import { lazyLoadWithRetry } from '../utils/lazyLoad';
 
 /**
  * Route Configuration
@@ -11,40 +12,44 @@ import { lazy } from 'react';
  * 
  * Lazy loading improves initial load time by splitting code into chunks
  * that are loaded on demand when routes are accessed.
+ * 
+ * Uses retry logic to handle failed chunk loads gracefully.
  */
 
 // ============================================================================
-// Lazy-loaded Page Components
+// Lazy-loaded Page Components with Retry Logic
 // ============================================================================
 
 // Auth Pages
-export const Login = lazy(() => import('../pages/auth/Login'));
-export const Register = lazy(() => import('../pages/auth/Register'));
-export const ProfileCompletion = lazy(() => import('../pages/auth/ProfileCompletion'));
+export const Login = lazy(() => lazyLoadWithRetry(() => import('../pages/auth/Login')));
+export const Register = lazy(() => lazyLoadWithRetry(() => import('../pages/auth/Register')));
+export const ProfileCompletion = lazy(() => lazyLoadWithRetry(() => import('../pages/auth/ProfileCompletion')));
 
 // User Pages
-export const Dashboard = lazy(() => import('../pages/user/Dashboard'));
-export const Profile = lazy(() => import('../pages/user/Profile'));
-export const Chat = lazy(() => import('../pages/user/Chat'));
-export const DiseaseDetection = lazy(() => import('../pages/user/DiseaseDetection'));
-export const Weather = lazy(() => import('../pages/user/Weather'));
-export const Market = lazy(() => import('../pages/user/Market'));
-export const Schemes = lazy(() => import('../pages/user/Schemes'));
-export const Notifications = lazy(() => import('../pages/user/Notifications'));
-export const SpeechServices = lazy(() => import('../pages/user/SpeechServices'));
+export const Dashboard = lazy(() => lazyLoadWithRetry(() => import('../pages/user/Dashboard')));
+export const Profile = lazy(() => lazyLoadWithRetry(() => import('../pages/user/Profile')));
+export const Chat = lazy(() => lazyLoadWithRetry(() => import('../pages/user/Chat')));
+export const DiseaseDetection = lazy(() => lazyLoadWithRetry(() => import('../pages/user/DiseaseDetection')));
+export const Weather = lazy(() => lazyLoadWithRetry(() => import('../pages/user/Weather')));
+export const Market = lazy(() => lazyLoadWithRetry(() => import('../pages/user/Market')));
+export const Schemes = lazy(() => lazyLoadWithRetry(() => import('../pages/user/Schemes')));
+export const Notifications = lazy(() => lazyLoadWithRetry(() => import('../pages/user/Notifications')));
+export const SpeechServices = lazy(() => lazyLoadWithRetry(() => import('../pages/user/SpeechServices')));
+export const MapsDemo = lazy(() => lazyLoadWithRetry(() => import('../pages/user/MapsDemo')));
 
 // Admin Pages
-export const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'));
-export const Users = lazy(() => import('../pages/admin/Users'));
-export const UserDetails = lazy(() => import('../pages/admin/UserDetails'));
-export const Monitoring = lazy(() => import('../pages/admin/Monitoring'));
-export const Translation = lazy(() => import('../pages/admin/Translation'));
-export const SMSManagement = lazy(() => import('../pages/admin/SMSManagement'));
-export const CacheManagement = lazy(() => import('../pages/admin/CacheManagement'));
-export const Performance = lazy(() => import('../pages/admin/Performance'));
-export const PortalSync = lazy(() => import('../pages/admin/PortalSync'));
-export const KnowledgeBase = lazy(() => import('../pages/admin/KnowledgeBase'));
-export const LLMManagement = lazy(() => import('../pages/admin/LLMManagement'));
+export const AdminDashboard = lazy(() => lazyLoadWithRetry(() => import('../pages/admin/AdminDashboard')));
+export const AdminCheck = lazy(() => lazyLoadWithRetry(() => import('../pages/admin/AdminCheck')));
+export const Users = lazy(() => lazyLoadWithRetry(() => import('../pages/admin/Users')));
+export const UserDetails = lazy(() => lazyLoadWithRetry(() => import('../pages/admin/UserDetails')));
+export const Monitoring = lazy(() => lazyLoadWithRetry(() => import('../pages/admin/Monitoring')));
+export const Translation = lazy(() => lazyLoadWithRetry(() => import('../pages/admin/Translation')));
+export const SMSManagement = lazy(() => lazyLoadWithRetry(() => import('../pages/admin/SMSManagement')));
+export const CacheManagement = lazy(() => lazyLoadWithRetry(() => import('../pages/admin/CacheManagement')));
+export const Performance = lazy(() => lazyLoadWithRetry(() => import('../pages/admin/Performance')));
+export const PortalSync = lazy(() => lazyLoadWithRetry(() => import('../pages/admin/PortalSync')));
+export const KnowledgeBase = lazy(() => lazyLoadWithRetry(() => import('../pages/admin/KnowledgeBase')));
+export const LLMManagement = lazy(() => lazyLoadWithRetry(() => import('../pages/admin/LLMManagement')));
 
 // ============================================================================
 // Route Definitions
@@ -127,6 +132,11 @@ export const protectedRoutes = [
         element: SpeechServices,
         title: 'Speech Services',
     },
+    {
+        path: '/maps',
+        element: MapsDemo,
+        title: 'Maps & Location Services',
+    },
 ];
 
 /**
@@ -143,6 +153,11 @@ export const adminRoutes = [
         path: '/admin/dashboard',
         element: AdminDashboard,
         title: 'Admin Dashboard',
+    },
+    {
+        path: '/admin/check',
+        element: AdminCheck,
+        title: 'Admin Access Check',
     },
     {
         path: '/admin/users',

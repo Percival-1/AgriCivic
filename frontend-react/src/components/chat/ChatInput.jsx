@@ -1,15 +1,16 @@
 import { useState, useRef } from 'react';
 import { FaPaperPlane, FaImage, FaTimes } from 'react-icons/fa';
 import Button from '../common/Button';
+import VoiceMessageButton from './VoiceMessageButton';
 
 /**
  * ChatInput Component
  * 
- * Chat input with send button and image upload support
+ * Chat input with send button, image upload, and voice message support
  * 
- * Requirement: 5.2
+ * Requirement: 5.2, 21.13
  */
-export default function ChatInput({ onSendMessage, disabled = false }) {
+export default function ChatInput({ onSendMessage, disabled = false, language = 'en' }) {
     const [message, setMessage] = useState('');
     const [selectedImage, setSelectedImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
@@ -85,6 +86,33 @@ export default function ChatInput({ onSendMessage, disabled = false }) {
         }
     };
 
+    /**
+     * Handle voice message transcription ready
+     * Requirement: 21.13 - Integrate speech in chat
+     */
+    const handleTranscriptionReady = (transcribedText) => {
+        console.log('Transcription ready:', transcribedText);
+        // Populate the text input with transcription
+        setMessage(transcribedText);
+    };
+
+    /**
+     * Handle voice message send
+     * Requirement: 21.13 - Integrate speech in chat
+     */
+    const handleSendVoiceMessage = ({ audio, transcription }) => {
+        console.log('Sending voice message with transcription:', transcription);
+        // Send voice message with transcription as text
+        onSendMessage({
+            message: transcription || '[Voice Message]',
+            image: null,
+            audio: audio,
+        });
+
+        // Clear the message input after sending
+        setMessage('');
+    };
+
     return (
         <div className="border-t border-gray-200 bg-white p-4">
             {/* Image Preview */}
@@ -106,6 +134,14 @@ export default function ChatInput({ onSendMessage, disabled = false }) {
 
             {/* Input Form */}
             <form onSubmit={handleSubmit} className="flex gap-2">
+                {/* Voice Message Button */}
+                <VoiceMessageButton
+                    onSendVoiceMessage={handleSendVoiceMessage}
+                    onTranscriptionReady={handleTranscriptionReady}
+                    disabled={disabled}
+                    language={language}
+                />
+
                 {/* Image Upload Button */}
                 <input
                     ref={fileInputRef}

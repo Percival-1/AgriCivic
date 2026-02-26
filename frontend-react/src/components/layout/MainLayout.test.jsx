@@ -15,6 +15,34 @@ vi.mock('../../hooks/useAuth', () => ({
     }),
 }));
 
+// Mock useSocket hook to prevent Socket.IO connection
+vi.mock('../../hooks/useSocket', () => ({
+    useSocket: () => ({
+        socket: null,
+        isConnected: false,
+    }),
+}));
+
+// Mock useNotifications hook
+vi.mock('../../hooks/useNotifications', () => ({
+    useNotifications: () => ({
+        notifications: [],
+        unreadCount: 0,
+        isConnected: false,
+    }),
+}));
+
+// Mock i18next
+vi.mock('react-i18next', () => ({
+    useTranslation: () => ({
+        t: (key) => key,
+        i18n: {
+            changeLanguage: vi.fn(),
+            language: 'en',
+        },
+    }),
+}));
+
 describe('MainLayout Component', () => {
     const renderMainLayout = () => {
         const store = configureStore({
@@ -31,15 +59,25 @@ describe('MainLayout Component', () => {
                         phone_number: '+1234567890',
                     },
                     token: 'test-token',
+                    loading: false,
+                    error: null,
                 },
                 user: {
+                    currentUser: {
+                        name: 'Test User',
+                        phone_number: '+1234567890',
+                    },
                     preferences: {
                         language: 'en',
                     },
+                    loading: false,
+                    error: null,
                 },
                 notifications: {
                     items: [],
                     unreadCount: 0,
+                    loading: false,
+                    error: null,
                 },
             },
         });

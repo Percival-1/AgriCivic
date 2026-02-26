@@ -14,7 +14,7 @@ class MapsService extends BaseService {
             throw new Error('Address is required for geocoding')
         }
 
-        return await this.post('/maps/geocode', { address })
+        return await this.post('/api/v1/maps/geocode', { address })
     }
 
     /**
@@ -28,7 +28,7 @@ class MapsService extends BaseService {
             return []
         }
 
-        return await this.post('/maps/autocomplete', { text, limit })
+        return await this.post('/api/v1/maps/autocomplete', { text, limit })
     }
 
     /**
@@ -42,7 +42,7 @@ class MapsService extends BaseService {
             throw new Error('Latitude and longitude are required')
         }
 
-        return await this.post('/maps/reverse-geocode', {
+        return await this.post('/api/v1/maps/reverse-geocode', {
             latitude,
             longitude
         })
@@ -56,7 +56,7 @@ class MapsService extends BaseService {
      * @returns {Promise<object>} Distance and duration information
      */
     async calculateDistance(origin, destination, mode = 'driving') {
-        return await this.post('/maps/distance', {
+        return await this.post('/api/v1/maps/distance', {
             origin,
             destination,
             mode
@@ -71,7 +71,7 @@ class MapsService extends BaseService {
      * @returns {Promise<object>} Route information with steps and polyline
      */
     async getRoute(origin, destination, mode = 'driving') {
-        return await this.post('/maps/route', {
+        return await this.post('/api/v1/maps/route', {
             origin,
             destination,
             mode
@@ -85,7 +85,7 @@ class MapsService extends BaseService {
      * @returns {Promise<object>} Validation result
      */
     async validateLocation(latitude, longitude) {
-        return await this.post('/maps/validate-location', {
+        return await this.post('/api/v1/maps/validate-location', {
             latitude,
             longitude
         })

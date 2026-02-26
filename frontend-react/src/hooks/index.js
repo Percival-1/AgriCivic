@@ -11,3 +11,5 @@ export { useDebounce } from './useDebounce';
 export { useSocket } from './useSocket';
 export { useChat } from './useChat';
 export { useLanguage } from './useLanguage';
+export { useAudioRecorder } from './useAudioRecorder';
+export { usePrefetch, usePrefetchOnHover, usePrefetchRoutes } from './usePrefetch';

@@ -1,7 +1,10 @@
+import { memo, useMemo } from 'react';
+
 /**
  * Button Component
  * 
  * Reusable button with multiple variants and states.
+ * Optimized with React.memo to prevent unnecessary re-renders.
  * 
  * @param {string} variant - Button style variant: 'primary', 'secondary', 'danger', 'success', 'outline'
  * @param {string} size - Button size: 'sm', 'md', 'lg'
@@ -13,7 +16,7 @@
  * @param {string} className - Additional CSS classes
  */
 
-export default function Button({
+const Button = memo(function Button({
     variant = 'primary',
     size = 'md',
     disabled = false,
@@ -40,7 +43,11 @@ export default function Button({
         lg: 'px-6 py-3 text-lg',
     };
 
-    const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+    // Memoize computed classes to avoid recalculation on every render
+    const classes = useMemo(
+        () => `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`,
+        [variant, size, className]
+    );
 
     return (
         <button
@@ -75,4 +82,6 @@ export default function Button({
             {children}
         </button>
     );
-}
+});
+
+export default Button;

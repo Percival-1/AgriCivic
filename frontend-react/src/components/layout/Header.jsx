@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -19,9 +19,11 @@ import { LANGUAGES } from '../../i18n/languages';
  * - Language selector
  * - Mobile menu toggle
  * 
+ * Optimized with React.memo and useCallback to prevent unnecessary re-renders.
+ * 
  * Requirements: 10.1, 11.1
  */
-export default function Header({ onMenuToggle, isMobileMenuOpen }) {
+const Header = memo(function Header({ onMenuToggle, isMobileMenuOpen }) {
     const navigate = useNavigate();
     const { logout } = useAuth();
     const { t, i18n } = useTranslation();
@@ -31,8 +33,11 @@ export default function Header({ onMenuToggle, isMobileMenuOpen }) {
     const profile = useSelector(selectProfile);
     const unreadCount = useSelector(selectUnreadCount);
 
-    // Use profile name if available, otherwise fall back to user name
-    const displayName = profile?.name || user?.name || user?.phone_number || t('common.welcome');
+    // Memoize display name to avoid recalculation
+    const displayName = useMemo(
+        () => profile?.name || user?.name || user?.phone_number || t('common.welcome'),
+        [profile?.name, user?.name, user?.phone_number, t]
+    );
 
     // Local state
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -59,34 +64,41 @@ export default function Header({ onMenuToggle, isMobileMenuOpen }) {
         };
     }, []);
 
-    // Handle logout
-    const handleLogout = async () => {
+    // Memoize event handlers with useCallback
+    const handleLogout = useCallback(async () => {
         setIsUserMenuOpen(false);
         await logout();
-    };
+    }, [logout]);
 
-    // Handle language change
-    const handleLanguageChange = (languageCode) => {
+    const handleLanguageChange = useCallback((languageCode) => {
         i18n.changeLanguage(languageCode);
         setIsLanguageMenuOpen(false);
-    };
+    }, [i18n]);
 
-    // Handle notification click
-    const handleNotificationClick = () => {
+    const handleNotificationClick = useCallback(() => {
         navigate('/notifications');
-    };
+    }, [navigate]);
 
-    // Handle profile click
-    const handleProfileClick = () => {
+    const handleProfileClick = useCallback(() => {
         setIsUserMenuOpen(false);
         navigate('/profile');
-    };
+    }, [navigate]);
 
-    // Get current language display name
-    const getCurrentLanguage = () => {
+    const toggleUserMenu = useCallback(() => {
+        setIsUserMenuOpen(prev => !prev);
+    }, []);
+
+    const toggleLanguageMenu = useCallback(() => {
+        setIsLanguageMenuOpen(prev => !prev);
+    }, []);
+
+    // Memoize current language display name
+    const getCurrentLanguage = useCallback(() => {
         const lang = LANGUAGES.find((l) => l.code === i18n.language);
         return lang ? lang.nativeName : 'English';
-    };
+    }, [i18n.language]);
+
+    const currentLanguage = useMemo(() => getCurrentLanguage(), [getCurrentLanguage]);
 
     return (
         <header className="bg-white shadow-md sticky top-0 z-50">
@@ -128,13 +140,13 @@ export default function Header({ onMenuToggle, isMobileMenuOpen }) {
                         {/* Language Selector */}
                         <div className="relative" ref={languageMenuRef}>
                             <button
-                                onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
+                                onClick={toggleLanguageMenu}
                                 className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500"
                                 aria-label="Select language"
                             >
                                 <FaGlobe className="h-5 w-5" />
                                 <span className="hidden sm:inline text-sm font-medium">
-                                    {getCurrentLanguage()}
+                                    {currentLanguage}
                                 </span>
                             </button>
 
@@ -184,7 +196,7 @@ export default function Header({ onMenuToggle, isMobileMenuOpen }) {
                         {/* User Menu */}
                         <div className="relative" ref={userMenuRef}>
                             <button
-                                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                                onClick={toggleUserMenu}
                                 className="flex items-center space-x-2 px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500"
                                 aria-label="User menu"
                             >
@@ -231,4 +243,6 @@ export default function Header({ onMenuToggle, isMobileMenuOpen }) {
             </div>
         </header>
     );
-}
+});
+
+export default Header;

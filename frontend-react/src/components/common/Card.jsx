@@ -1,7 +1,10 @@
+import { memo, useMemo } from 'react';
+
 /**
  * Card Component
  * 
  * Reusable card container with optional header and footer.
+ * Optimized with React.memo to prevent unnecessary re-renders.
  * 
  * @param {ReactNode} children - Card content
  * @param {string} title - Optional card title
@@ -12,7 +15,7 @@
  * @param {function} onClick - Optional click handler (makes card clickable)
  */
 
-export default function Card({
+const Card = memo(function Card({
     children,
     title,
     header,
@@ -23,7 +26,12 @@ export default function Card({
 }) {
     const baseClasses = 'bg-white rounded-lg shadow-md overflow-hidden';
     const hoverClasses = hoverable || onClick ? 'hover:shadow-lg transition-shadow cursor-pointer' : '';
-    const classes = `${baseClasses} ${hoverClasses} ${className}`;
+
+    // Memoize computed classes
+    const classes = useMemo(
+        () => `${baseClasses} ${hoverClasses} ${className}`,
+        [hoverClasses, className]
+    );
 
     return (
         <div className={classes} onClick={onClick}>
@@ -48,4 +56,6 @@ export default function Card({
             )}
         </div>
     );
-}
+});
+
+export default Card;

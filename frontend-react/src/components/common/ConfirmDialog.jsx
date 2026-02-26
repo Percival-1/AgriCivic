@@ -56,7 +56,10 @@ export default function ConfirmDialog({
 
             {/* Dialog */}
             <div className="flex min-h-full items-center justify-center p-4">
-                <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                <div
+                    className="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6 z-10"
+                    onClick={(e) => e.stopPropagation()}
+                >
                     <div className="flex items-start">
                         <div className={`flex-shrink-0 ${iconColor[variant]}`}>
                             <FaExclamationTriangle size={24} />

@@ -6,6 +6,10 @@ import App from './App.jsx'
 import { store } from './store'
 import './index.css'
 import './i18n/config'
+import { initializeSecurity } from './utils/security'
+
+// Initialize security features
+initializeSecurity();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
