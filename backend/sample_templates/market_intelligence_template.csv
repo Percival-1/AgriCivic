@@ -1,0 +1,4 @@
+content,source,crop,region,mandi_name,price_range,date,category,language,document_type
+"Current wheat prices in Delhi mandi: Rs. 2100-2200 per quintal. Demand is high due to festival season. Transport cost to nearby districts is Rs. 50-80 per quintal.",market_intelligence_system,wheat,delhi,Delhi APMC,Rs. 2100-2200 per quintal,2024-01-15,market_intelligence,en,market_intelligence
+"Rice prices in Mumbai APMC: Rs. 3500-3800 per quintal for basmati variety. Quality premium for aged rice. Storage facilities available at mandi.",market_intelligence_system,rice,mumbai,Mumbai APMC,Rs. 3500-3800 per quintal,2024-01-15,market_intelligence,en,market_intelligence
+"Tomato prices in Bangalore market: Rs. 15-20 per kg. Supply is good from local farms. Prices expected to remain stable for next 2 weeks.",market_intelligence_system,tomato,bangalore,Bangalore Vegetable Market,Rs. 15-20 per kg,2024-01-15,market_intelligence,en,market_intelligence

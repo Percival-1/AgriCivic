@@ -1,0 +1,4 @@
+content,source,crop,disease_name,category,severity,treatment_type,language,document_type
+"Rice blast disease appears as diamond-shaped lesions on leaves with gray centers and brown margins. Apply Tricyclazole 75% WP @ 0.6g/liter or Carbendazim 50% WP @ 1g/liter for control.",plant_pathology_guide,rice,rice_blast,disease_management,high,chemical,en,disease_information
+"Tomato early blight shows brown spots with concentric rings on older leaves. Remove affected leaves and spray Mancozeb 75% WP @ 2.5g/liter every 10-15 days.",vegetable_disease_manual,tomato,early_blight,disease_management,medium,chemical,en,disease_information
+"Wheat rust appears as orange-brown pustules on leaves and stems. Use resistant varieties and apply Propiconazole 25% EC @ 1ml/liter if infection is severe.",cereal_pathology_guide,wheat,rust,disease_management,high,chemical,en,disease_information

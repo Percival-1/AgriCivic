@@ -1,0 +1,4 @@
+content,source,crop,category,season,region,language,document_type
+"Wheat cultivation requires well-drained soil with pH between 6.0-7.5. Sowing should be done in November-December for optimal yield. Use 100-120 kg seeds per hectare.",agricultural_extension_guide,wheat,cultivation,rabi,north_india,en,agricultural_knowledge
+"Rice requires flooded conditions during most of its growing period. Transplant 21-25 day old seedlings with 2-3 seedlings per hill at 20x15 cm spacing.",rice_cultivation_manual,rice,cultivation,kharif,all_india,en,agricultural_knowledge
+"Tomato seedlings should be transplanted when they are 4-6 weeks old. Maintain 60x45 cm spacing between plants. Provide support stakes for indeterminate varieties.",vegetable_production_guide,tomato,cultivation,all_season,all_india,en,agricultural_knowledge

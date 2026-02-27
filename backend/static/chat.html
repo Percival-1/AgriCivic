@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agri-Civic Intelligence Platform - Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 800px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .chat-header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            color: #333;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-sources {
+            font-size: 12px;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .message.assistant .message-sources {
+            border-top-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+        }
+
+        .send-button,
+        .upload-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .send-button:hover,
+        .upload-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-button:active,
+        .upload-button:active {
+            transform: translateY(0);
+        }
+
+        .upload-button {
+            padding: 12px 20px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 10px;
+            color: #666;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .error-message {
+            background: #ff4444;
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            margin: 10px 20px;
+            display: none;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        .init-form {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .init-form input {
+            margin: 10px 0;
+            padding: 12px;
+            width: 100%;
+            max-width: 300px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .init-form button {
+            margin-top: 10px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>🌾 Agri-Civic Intelligence Platform</h1>
+            <p>Your AI-powered agricultural assistant</p>
+        </div>
+
+        <div id="initForm" class="init-form">
+            <h2>Start Chat Session</h2>
+            <input type="text" id="userId" placeholder="Enter User ID (UUID)" />
+            <select id="language">
+                <option value="en">English</option>
+                <option value="hi">Hindi</option>
+                <option value="ta">Tamil</option>
+                <option value="te">Telugu</option>
+            </select>
+            <button onclick="initializeChat()">Start Chat</button>
+        </div>
+
+        <div id="chatInterface" style="display: none; flex: 1; display: flex; flex-direction: column;">
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="loading" id="loading">Processing...</div>
+            <div class="error-message" id="errorMessage"></div>
+            <div class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <input type="file" id="fileInput" class="file-input" accept="image/*" onchange="uploadImage()" />
+                    <button class="upload-button" onclick="document.getElementById('fileInput').click()">📷
+                        Upload</button>
+                    <input type="text" id="messageInput" class="chat-input" placeholder="Type your message..."
+                        onkeypress="handleKeyPress(event)" />
+                    <button class="send-button" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let sessionId = null;
+        let currentLanguage = 'en';
+
+        async function initializeChat() {
+            const userId = document.getElementById('userId').value;
+            const language = document.getElementById('language').value;
+
+            if (!userId) {
+                showError('Please enter a User ID');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                const response = await fetch(`${API_BASE}/chat/init`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        language: language
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to initialize chat session');
+                }
+
+                const data = await response.json();
+                sessionId = data.session_id;
+                currentLanguage = language;
+
+                document.getElementById('initForm').style.display = 'none';
+                document.getElementById('chatInterface').style.display = 'flex';
+
+                addMessage('assistant', data.welcome_message);
+                showLoading(false);
+            } catch (error) {
+                showError(error.message);
+                showLoading(false);
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message || !sessionId) return;
+
+            addMessage('user', message);
+            input.value = '';
+
+            try {
+                showLoading(true);
+                const response = await fetch(`${API_BASE}/chat/message`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        message: message,
+                        language: currentLanguage
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to send message');
+                }
+
+                const data = await response.json();
+                addMessage('assistant', data.content, data.sources);
+                showLoading(false);
+            } catch (error) {
+                showError(error.message);
+                showLoading(false);
+            }
+        }
+
+        async function uploadImage() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (!file || !sessionId) return;
+
+            try {
+                showLoading(true);
+                addMessage('user', `[Uploaded image: ${file.name}]`);
+
+                const formData = new FormData();
+                formData.append('session_id', sessionId);
+                formData.append('language', currentLanguage);
+                formData.append('image', file);
+
+                const response = await fetch(`${API_BASE}/chat/upload-image`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to upload image');
+                }
+
+                const data = await response.json();
+
+                let responseText = `Disease Identified: ${data.disease_info.disease_name || 'Unknown'}\n\n`;
+                if (data.disease_info.confidence) {
+                    responseText += `Confidence: ${(data.disease_info.confidence * 100).toFixed(1)}%\n\n`;
+                }
+                responseText += `Treatment Recommendations:\n${data.treatment_recommendations.join('\n')}`;
+
+                addMessage('assistant', responseText, data.sources);
+                showLoading(false);
+                fileInput.value = '';
+            } catch (error) {
+                showError(error.message);
+                showLoading(false);
+            }
+        }
+
+        function addMessage(role, content, sources = null) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+
+            let messageHTML = `<div class="message-content">${content}`;
+
+            if (sources && sources.length > 0) {
+                messageHTML += `<div class="message-sources">📚 Sources: ${sources.join(', ')}</div>`;
+            }
+
+            messageHTML += `</div>`;
+            messageDiv.innerHTML = messageHTML;
+
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            loading.className = show ? 'loading active' : 'loading';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.className = 'error-message active';
+            setTimeout(() => {
+                errorDiv.className = 'error-message';
+            }, 5000);
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+    </script>
+</body>
+
+</html>

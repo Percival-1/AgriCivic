@@ -1,0 +1,71 @@
+{
+    "documents": [
+        {
+            "content": "Wheat cultivation requires well-drained soil with pH between 6.0-7.5. Sowing should be done in November-December for optimal yield. Use 100-120 kg seeds per hectare. Apply irrigation at critical stages: crown root initiation, tillering, jointing, flowering, and grain filling.",
+            "metadata": {
+                "source": "agricultural_extension_guide",
+                "crop": "wheat",
+                "category": "cultivation",
+                "season": "rabi",
+                "region": "north_india",
+                "language": "en",
+                "document_type": "agricultural_knowledge"
+            }
+        },
+        {
+            "content": "Rice blast disease is caused by the fungus Magnaporthe oryzae. Symptoms include diamond-shaped lesions on leaves with gray centers and brown margins. Apply Tricyclazole 75% WP @ 0.6g/liter or Carbendazim 50% WP @ 1g/liter for control. Spray at disease appearance and repeat after 15 days.",
+            "metadata": {
+                "source": "plant_pathology_guide",
+                "crop": "rice",
+                "disease_name": "rice_blast",
+                "pathogen": "Magnaporthe oryzae",
+                "category": "disease_management",
+                "severity": "high",
+                "treatment_type": "chemical",
+                "language": "en",
+                "document_type": "disease_information"
+            }
+        },
+        {
+            "content": "PM-KISAN scheme provides direct income support of Rs. 6000 per year to small and marginal farmers. The amount is paid in three equal installments of Rs. 2000 each. Eligible farmers with landholding up to 2 hectares can apply online through the official PM-KISAN portal.",
+            "metadata": {
+                "source": "government_portal",
+                "scheme_name": "PM-KISAN",
+                "scheme_type": "income_support",
+                "eligibility": "small_and_marginal_farmers",
+                "benefit_amount": "Rs. 6000 per year",
+                "category": "government_scheme",
+                "language": "en",
+                "document_type": "government_scheme"
+            }
+        },
+        {
+            "content": "Current wheat prices in Delhi APMC: Rs. 2100-2200 per quintal for FAQ grade. Demand is high due to festival season. Transport cost to nearby districts is Rs. 50-80 per quintal. Storage facilities available at mandi with charges of Rs. 10 per quintal per month.",
+            "metadata": {
+                "source": "market_intelligence_system",
+                "crop": "wheat",
+                "region": "delhi",
+                "mandi_name": "Delhi APMC",
+                "price_range": "Rs. 2100-2200 per quintal",
+                "date": "2024-01-15",
+                "category": "market_intelligence",
+                "language": "en",
+                "document_type": "market_intelligence"
+            }
+        },
+        {
+            "content": "Tomato early blight is caused by Alternaria solani fungus. Symptoms include brown spots with concentric rings on older leaves. Disease spreads rapidly in warm humid conditions. Remove affected leaves and spray Mancozeb 75% WP @ 2.5g/liter every 10-15 days for control.",
+            "metadata": {
+                "source": "vegetable_production_guide",
+                "crop": "tomato",
+                "disease_name": "early_blight",
+                "pathogen": "Alternaria solani",
+                "category": "disease_management",
+                "severity": "medium",
+                "treatment_type": "chemical",
+                "language": "en",
+                "document_type": "disease_information"
+            }
+        }
+    ]
+}
