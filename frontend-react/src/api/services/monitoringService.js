@@ -130,6 +130,27 @@ class MonitoringService {
         const response = await axios.post(`${ENDPOINTS.ADMIN.MONITORING}/alerts/check`);
         return response.data;
     }
+
+    /**
+     * Get system metrics (comprehensive system-wide metrics)
+     * This is an alias for getMetrics() for consistency with requirements
+     */
+    async getSystemMetrics() {
+        return this.getMetrics();
+    }
+
+    /**
+     * Get alerts (both active and historical)
+     * @param {boolean} activeOnly - If true, return only active alerts (default: true)
+     * @param {number} limit - Maximum number of alerts to return for history
+     */
+    async getAlerts(activeOnly = true, limit = 100) {
+        if (activeOnly) {
+            return this.getActiveAlerts();
+        } else {
+            return this.getAlertHistory(limit);
+        }
+    }
 }
 
 export default new MonitoringService();

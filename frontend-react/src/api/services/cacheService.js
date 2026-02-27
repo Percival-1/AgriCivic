@@ -16,23 +16,14 @@ class CacheService extends BaseService {
 
     /**
      * Invalidate cache for a specific namespace
-     * @param {string} namespace - Cache namespace to invalidate (e.g., 'weather', 'market', 'schemes')
+     * @param {string} namespace - Cache namespace to invalidate (e.g., 'weather', 'market', 'scheme')
+     * @param {string} identifier - Optional specific identifier to invalidate
      * @returns {Promise<object>} Invalidation result
      */
-    async invalidateCache(namespace) {
+    async invalidateCache(namespace, identifier = null) {
         const response = await this.post(ENDPOINTS.CACHE.INVALIDATE, {
-            namespace
-        })
-        return response
-    }
-
-    /**
-     * Invalidate all cache namespaces
-     * @returns {Promise<object>} Invalidation result
-     */
-    async invalidateAllCache() {
-        const response = await this.post(ENDPOINTS.CACHE.INVALIDATE, {
-            namespace: 'all'
+            namespace,
+            identifier
         })
         return response
     }
@@ -48,10 +39,10 @@ class CacheService extends BaseService {
 
     /**
      * Get cache namespaces with TTL information
-     * @returns {Promise<Array>} List of cache namespaces
+     * @returns {Promise<object>} List of cache namespaces
      */
     async getCacheNamespaces() {
-        const response = await this.get(`${ENDPOINTS.CACHE.METRICS}/namespaces`)
+        const response = await this.get(ENDPOINTS.CACHE.NAMESPACES)
         return response
     }
 
@@ -60,7 +51,7 @@ class CacheService extends BaseService {
      * @returns {Promise<object>} Reset result
      */
     async resetMetrics() {
-        const response = await this.post(`${ENDPOINTS.CACHE.METRICS}/reset`)
+        const response = await this.post(ENDPOINTS.CACHE.RESET_METRICS)
         return response
     }
 

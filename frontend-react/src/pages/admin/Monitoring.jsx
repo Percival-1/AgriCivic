@@ -52,7 +52,12 @@ export default function Monitoring() {
     const [circuitBreakers, setCircuitBreakers] = useState(null);
     const [errorSummary, setErrorSummary] = useState(null);
     const [activeAlerts, setActiveAlerts] = useState(null);
+    const [alertHistory, setAlertHistory] = useState(null);
     const [serviceMetrics, setServiceMetrics] = useState(null);
+
+    // Alert history filters
+    const [showAlertHistory, setShowAlertHistory] = useState(false);
+    const [alertHistoryLimit, setAlertHistoryLimit] = useState(100);
 
     // Fetch all monitoring data
     const fetchMonitoringData = async () => {
@@ -78,6 +83,12 @@ export default function Monitoring() {
             setErrorSummary(errors);
             setActiveAlerts(alerts);
             setServiceMetrics(services);
+
+            // Fetch alert history if the section is visible
+            if (showAlertHistory) {
+                const history = await monitoringService.getAlertHistory(alertHistoryLimit);
+                setAlertHistory(history);
+            }
         } catch (err) {
             console.error('Error fetching monitoring data:', err);
             setError(err.message || 'Failed to fetch monitoring data');
@@ -92,7 +103,7 @@ export default function Monitoring() {
         // Auto-refresh every 30 seconds
         const interval = setInterval(fetchMonitoringData, 30000);
         return () => clearInterval(interval);
-    }, []);
+    }, [showAlertHistory, alertHistoryLimit]);
 
     const handleRefresh = () => {
         setRefreshing(true);
@@ -133,6 +144,14 @@ export default function Monitoring() {
         } catch (err) {
             setError(`Failed to check alerts: ${err.message}`);
         }
+    };
+
+    const handleToggleAlertHistory = () => {
+        setShowAlertHistory(!showAlertHistory);
+    };
+
+    const handleAlertHistoryLimitChange = (e) => {
+        setAlertHistoryLimit(parseInt(e.target.value, 10));
     };
 
     // Get status icon and color
@@ -326,6 +345,120 @@ export default function Monitoring() {
                     </div>
                 </Card>
             )}
+
+            {/* Alert History */}
+            <Card>
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                        <FaClock />
+                        Alert History
+                    </h2>
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                            <label htmlFor="alertLimit" className="text-sm text-gray-600">
+                                Limit:
+                            </label>
+                            <select
+                                id="alertLimit"
+                                value={alertHistoryLimit}
+                                onChange={handleAlertHistoryLimitChange}
+                                className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value={50}>50</option>
+                                <option value={100}>100</option>
+                                <option value={200}>200</option>
+                                <option value={500}>500</option>
+                            </select>
+                        </div>
+                        <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={handleToggleAlertHistory}
+                        >
+                            {showAlertHistory ? 'Hide History' : 'Show History'}
+                        </Button>
+                    </div>
+                </div>
+
+                {showAlertHistory && (
+                    <div>
+                        {alertHistory ? (
+                            alertHistory.alert_history && alertHistory.alert_history.length > 0 ? (
+                                <div className="space-y-2">
+                                    {alertHistory.alert_history.map((alert) => (
+                                        <div
+                                            key={alert.id}
+                                            className={`flex items-center justify-between p-3 rounded-lg border ${alert.resolved
+                                                    ? 'bg-gray-50 border-gray-200'
+                                                    : 'bg-yellow-50 border-yellow-200'
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                {getStatusIcon(alert.severity)}
+                                                <div>
+                                                    <p className="font-medium">{alert.message}</p>
+                                                    <p className="text-sm text-gray-600">
+                                                        {alert.rule_name} -{' '}
+                                                        {new Date(alert.timestamp).toLocaleString()}
+                                                    </p>
+                                                    {alert.resolved && alert.resolved_at && (
+                                                        <p className="text-xs text-green-600">
+                                                            Resolved at:{' '}
+                                                            {new Date(
+                                                                alert.resolved_at
+                                                            ).toLocaleString()}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span
+                                                    className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(
+                                                        alert.severity
+                                                    )}`}
+                                                >
+                                                    {alert.severity}
+                                                </span>
+                                                {alert.resolved ? (
+                                                    <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+                                                        Resolved
+                                                    </span>
+                                                ) : (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="secondary"
+                                                        onClick={() => handleResolveAlert(alert.id)}
+                                                    >
+                                                        Resolve
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <div className="mt-4 p-3 bg-gray-50 rounded text-sm text-gray-600">
+                                        Showing {alertHistory.alert_history.length} of{' '}
+                                        {alertHistory.total_alerts || alertHistory.alert_history.length}{' '}
+                                        total alerts
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-center py-8">
+                                    <FaCheckCircle className="text-green-500 text-4xl mx-auto mb-2" />
+                                    <p className="text-gray-600">No alert history found</p>
+                                </div>
+                            )
+                        ) : (
+                            <Loader text="Loading alert history..." />
+                        )}
+                    </div>
+                )}
+
+                {!showAlertHistory && (
+                    <div className="text-center py-8 text-gray-500">
+                        <p>Click "Show History" to view past alerts</p>
+                    </div>
+                )}
+            </Card>
 
             {/* Metrics Overview */}
             {metrics && (

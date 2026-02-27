@@ -10,4 +10,8 @@ export { default as visionService } from './visionService';
 export { default as speechService } from './speechService';
 export { default as adminService } from './adminService';
 export { default as monitoringService } from './monitoringService';
+export { default as portalSyncService } from './portalSyncService';
+export { default as ragService } from './ragService';
+export { default as llmService } from './llmService';
+export { default as smsService } from './smsService';
 export { default as BaseService } from './BaseService';

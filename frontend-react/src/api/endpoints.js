@@ -77,7 +77,7 @@ export const ENDPOINTS = {
         USERS: '/admin/users',
         MONITORING: '/api/v1/monitoring',
         CACHE: '/admin/cache',
-        PERFORMANCE: '/admin/performance',
+        PERFORMANCE: '/api/v1/performance',
     },
 
     // Cache
@@ -85,5 +85,15 @@ export const ENDPOINTS = {
         METRICS: '/api/v1/cache/metrics',
         INVALIDATE: '/api/v1/cache/invalidate',
         HEALTH: '/api/v1/cache/health',
+        NAMESPACES: '/api/v1/cache/namespaces',
+        RESET_METRICS: '/api/v1/cache/reset-metrics',
+    },
+
+    // LLM
+    LLM: {
+        METRICS: '/api/v1/llm/metrics',
+        HEALTH: '/api/v1/llm/health',
+        PROVIDERS: '/api/v1/llm/providers',
+        RESET_METRICS: '/api/v1/llm/metrics/reset',
     },
 }

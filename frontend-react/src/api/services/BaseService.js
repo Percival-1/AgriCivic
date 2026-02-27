@@ -93,12 +93,35 @@ class BaseService {
             throw error
         }
 
+        // Extract error message from various possible formats
+        let errorMessage = 'An unexpected error occurred';
+
+        if (error.response?.data) {
+            const data = error.response.data;
+
+            // Handle Pydantic validation errors (array of error objects)
+            if (Array.isArray(data.detail)) {
+                errorMessage = data.detail.map(err => err.msg || JSON.stringify(err)).join(', ');
+            }
+            // Handle string detail
+            else if (typeof data.detail === 'string') {
+                errorMessage = data.detail;
+            }
+            // Handle message field
+            else if (data.message) {
+                errorMessage = data.message;
+            }
+            // Handle detail object
+            else if (data.detail && typeof data.detail === 'object') {
+                errorMessage = data.detail.msg || JSON.stringify(data.detail);
+            }
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+
         // Format raw error
         const formattedError = {
-            message: error.response?.data?.message ||
-                error.response?.data?.detail ||
-                error.message ||
-                'An unexpected error occurred',
+            message: errorMessage,
             status: error.response?.status,
             data: error.response?.data,
             type: error.type || 'api_error'

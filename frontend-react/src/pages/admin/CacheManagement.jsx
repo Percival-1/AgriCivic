@@ -20,6 +20,7 @@ import {
     FaChartPie,
     FaMemory,
     FaClock,
+    FaServer,
 } from 'react-icons/fa';
 import Loader from '../../components/common/Loader';
 import ErrorAlert from '../../components/common/ErrorAlert';
@@ -59,27 +60,15 @@ export default function CacheManagement() {
     const fetchCacheData = async () => {
         try {
             setError(null);
-            const [metricsData, healthData] = await Promise.all([
+            const [metricsData, healthData, namespacesData] = await Promise.all([
                 cacheService.getCacheMetrics(),
                 cacheService.getCacheHealth(),
+                cacheService.getCacheNamespaces(),
             ]);
 
             setMetrics(metricsData);
             setHealth(healthData);
-
-            // Extract namespaces from metrics if available
-            if (metricsData?.namespaces) {
-                setNamespaces(metricsData.namespaces);
-            } else if (metricsData?.by_namespace) {
-                // Convert by_namespace object to array
-                const namespacesArray = Object.entries(metricsData.by_namespace).map(
-                    ([name, data]) => ({
-                        name,
-                        ...data,
-                    })
-                );
-                setNamespaces(namespacesArray);
-            }
+            setNamespaces(namespacesData?.namespaces || []);
         } catch (err) {
             console.error('Error fetching cache data:', err);
             setError(err.message || 'Failed to fetch cache data');
@@ -113,18 +102,6 @@ export default function CacheManagement() {
         }
     };
 
-    const handleInvalidateAllCache = async () => {
-        try {
-            setError(null);
-            setSuccess(null);
-            await cacheService.invalidateAllCache();
-            setSuccess('All cache namespaces invalidated successfully');
-            fetchCacheData();
-        } catch (err) {
-            setError(`Failed to invalidate all cache: ${err.message}`);
-        }
-    };
-
     const handleResetMetrics = async () => {
         try {
             setError(null);
@@ -139,16 +116,10 @@ export default function CacheManagement() {
 
     const confirmInvalidate = (namespace) => {
         setConfirmMessage(
-            namespace === 'all'
-                ? 'Are you sure you want to invalidate all cache namespaces? This will clear all cached data.'
-                : `Are you sure you want to invalidate the cache for namespace: ${namespace}?`
+            `Are you sure you want to invalidate the cache for namespace: ${namespace}? This will clear all cached data for this namespace.`
         );
         setConfirmAction(() => () => {
-            if (namespace === 'all') {
-                handleInvalidateAllCache();
-            } else {
-                handleInvalidateCache(namespace);
-            }
+            handleInvalidateCache(namespace);
             setShowConfirmDialog(false);
         });
         setShowConfirmDialog(true);
@@ -183,6 +154,12 @@ export default function CacheManagement() {
         return cacheService.calculateHitRate(hits || 0, misses || 0);
     };
 
+    // Calculate total hits (memory + redis + fallback)
+    const getTotalHits = () => {
+        if (!metrics) return 0;
+        return (metrics.memory_hits || 0) + (metrics.redis_hits || 0) + (metrics.fallback_hits || 0);
+    };
+
     // Chart data for hit/miss distribution
     const hitMissChartData = metrics
         ? {
@@ -190,32 +167,34 @@ export default function CacheManagement() {
             datasets: [
                 {
                     label: 'Cache Performance',
-                    data: [metrics.hits || 0, metrics.misses || 0],
+                    data: [getTotalHits(), metrics.misses || 0],
                     backgroundColor: ['rgba(34, 197, 94, 0.8)', 'rgba(239, 68, 68, 0.8)'],
                 },
             ],
         }
         : null;
 
-    // Chart data for namespace performance
-    const namespaceChartData =
-        namespaces.length > 0
-            ? {
-                labels: namespaces.map((ns) => ns.name),
-                datasets: [
-                    {
-                        label: 'Hits',
-                        data: namespaces.map((ns) => ns.hits || 0),
-                        backgroundColor: 'rgba(34, 197, 94, 0.8)',
-                    },
-                    {
-                        label: 'Misses',
-                        data: namespaces.map((ns) => ns.misses || 0),
-                        backgroundColor: 'rgba(239, 68, 68, 0.8)',
-                    },
-                ],
-            }
-            : null;
+    // Chart data for tier distribution
+    const tierChartData = metrics
+        ? {
+            labels: ['Memory', 'Redis', 'Fallback'],
+            datasets: [
+                {
+                    label: 'Cache Tier Hits',
+                    data: [
+                        metrics.memory_hits || 0,
+                        metrics.redis_hits || 0,
+                        metrics.fallback_hits || 0,
+                    ],
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(168, 85, 247, 0.8)',
+                        'rgba(251, 146, 60, 0.8)',
+                    ],
+                },
+            ],
+        }
+        : null;
 
     if (loading) {
         return <Loader fullScreen text="Loading cache data..." />;
@@ -240,14 +219,6 @@ export default function CacheManagement() {
                     >
                         <FaSync className={refreshing ? 'animate-spin' : ''} />
                         Refresh
-                    </Button>
-                    <Button
-                        onClick={() => confirmInvalidate('all')}
-                        variant="danger"
-                        className="flex items-center gap-2"
-                    >
-                        <FaTrash />
-                        Clear All Cache
                     </Button>
                 </div>
             </div>
@@ -279,28 +250,32 @@ export default function CacheManagement() {
                                 </p>
                             </div>
                         </div>
-                        {health.connected !== undefined && (
+                        {health.memory_cache && (
                             <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-                                {health.connected ? (
+                                {health.memory_cache.available ? (
                                     <FaCheckCircle className="text-green-500" />
                                 ) : (
                                     <FaTimesCircle className="text-red-500" />
                                 )}
                                 <div>
-                                    <p className="text-sm text-gray-600">Connection</p>
+                                    <p className="text-sm text-gray-600">Memory Cache</p>
                                     <p className="text-lg font-semibold">
-                                        {health.connected ? 'Connected' : 'Disconnected'}
+                                        {health.memory_cache.available ? 'Available' : 'Unavailable'}
                                     </p>
                                 </div>
                             </div>
                         )}
-                        {health.memory_usage && (
+                        {health.redis_cache && (
                             <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-                                <FaMemory className="text-purple-500" />
+                                {health.redis_cache.available ? (
+                                    <FaCheckCircle className="text-green-500" />
+                                ) : (
+                                    <FaTimesCircle className="text-red-500" />
+                                )}
                                 <div>
-                                    <p className="text-sm text-gray-600">Memory Usage</p>
+                                    <p className="text-sm text-gray-600">Redis Cache</p>
                                     <p className="text-lg font-semibold">
-                                        {cacheService.formatMemorySize(health.memory_usage)}
+                                        {health.redis_cache.available ? 'Available' : 'Unavailable'}
                                     </p>
                                 </div>
                             </div>
@@ -324,19 +299,19 @@ export default function CacheManagement() {
                             <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                                 <span className="text-gray-600">Hit Rate</span>
                                 <span className="font-semibold text-green-600">
-                                    {calculateHitRate(metrics.hits, metrics.misses)}%
+                                    {(metrics.hit_rate * 100).toFixed(2)}%
                                 </span>
                             </div>
                             <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                                 <span className="text-gray-600">Total Requests</span>
                                 <span className="font-semibold">
-                                    {(metrics.hits || 0) + (metrics.misses || 0)}
+                                    {metrics.total_requests || 0}
                                 </span>
                             </div>
                             <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                                <span className="text-gray-600">Cache Hits</span>
+                                <span className="text-gray-600">Total Hits</span>
                                 <span className="font-semibold text-green-600">
-                                    {metrics.hits || 0}
+                                    {getTotalHits()}
                                 </span>
                             </div>
                             <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
@@ -345,13 +320,38 @@ export default function CacheManagement() {
                                     {metrics.misses || 0}
                                 </span>
                             </div>
-                            {metrics.evictions !== undefined && (
+                            <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                                <span className="text-gray-600">Evictions</span>
+                                <span className="font-semibold">{metrics.evictions || 0}</span>
+                            </div>
+                            {metrics.average_access_time > 0 && (
                                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                                    <span className="text-gray-600">Evictions</span>
-                                    <span className="font-semibold">{metrics.evictions}</span>
+                                    <span className="text-gray-600">Avg Access Time</span>
+                                    <span className="font-semibold">
+                                        {(metrics.average_access_time || 0).toFixed(3)}ms
+                                    </span>
                                 </div>
                             )}
                         </div>
+                        {metrics.redis_stats && (
+                            <div className="mt-4 p-3 bg-blue-50 rounded">
+                                <p className="text-sm font-semibold text-blue-900 mb-2">Redis Statistics</p>
+                                <div className="space-y-1 text-sm">
+                                    <div className="flex justify-between">
+                                        <span className="text-blue-700">Total Keys:</span>
+                                        <span className="font-medium">{metrics.redis_stats.total_keys || 0}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-blue-700">Memory Used:</span>
+                                        <span className="font-medium">{metrics.redis_stats.used_memory_human || '0B'}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-blue-700">Peak Memory:</span>
+                                        <span className="font-medium">{metrics.redis_stats.used_memory_peak_human || '0B'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         <div className="mt-4">
                             <Button
                                 onClick={confirmResetMetrics}
@@ -382,31 +382,106 @@ export default function CacheManagement() {
                                     />
                                 </div>
                             </div>
+                            {metrics.redis_stats && metrics.redis_stats.namespace_keys && (
+                                <div className="mt-4 p-3 bg-gray-50 rounded">
+                                    <p className="text-sm font-semibold text-gray-700 mb-2">Keys by Namespace</p>
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                        {Object.entries(metrics.redis_stats.namespace_keys).map(([ns, count]) => (
+                                            <div key={ns} className="flex justify-between">
+                                                <span className="text-gray-600 capitalize">{ns}:</span>
+                                                <span className="font-medium">{count}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </Card>
                     )}
                 </div>
             )}
 
-            {/* Namespace Performance Chart */}
-            {namespaceChartData && (
+            {/* Cache Tier Performance */}
+            {metrics && tierChartData && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card>
+                        <h2 className="text-xl font-semibold mb-4">Cache Tier Performance</h2>
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-center p-3 bg-blue-50 rounded">
+                                <span className="text-gray-600">Memory Hits</span>
+                                <span className="font-semibold text-blue-600">
+                                    {metrics.memory_hits || 0} ({(metrics.memory_hit_rate * 100).toFixed(1)}%)
+                                </span>
+                            </div>
+                            <div className="flex justify-between items-center p-3 bg-purple-50 rounded">
+                                <span className="text-gray-600">Redis Hits</span>
+                                <span className="font-semibold text-purple-600">
+                                    {metrics.redis_hits || 0} ({(metrics.redis_hit_rate * 100).toFixed(1)}%)
+                                </span>
+                            </div>
+                            <div className="flex justify-between items-center p-3 bg-orange-50 rounded">
+                                <span className="text-gray-600">Fallback Hits</span>
+                                <span className="font-semibold text-orange-600">
+                                    {metrics.fallback_hits || 0} ({(metrics.fallback_hit_rate * 100).toFixed(1)}%)
+                                </span>
+                            </div>
+                        </div>
+                    </Card>
+
+                    <Card>
+                        <h2 className="text-xl font-semibold mb-4">Tier Distribution</h2>
+                        <div className="flex justify-center">
+                            <div className="w-64 h-64">
+                                <Doughnut
+                                    data={tierChartData}
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: true,
+                                        plugins: {
+                                            legend: { position: 'bottom' },
+                                        },
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </Card>
+                </div>
+            )}
+
+            {/* Memory Utilization */}
+            {metrics && (
                 <Card>
-                    <h2 className="text-xl font-semibold mb-4">Performance by Namespace</h2>
-                    <div className="h-80">
-                        <Bar
-                            data={namespaceChartData}
-                            options={{
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                    legend: { position: 'top' },
-                                },
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                    },
-                                },
-                            }}
-                        />
+                    <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <FaMemory />
+                        Memory Utilization
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                            <FaServer className="text-blue-500" />
+                            <div>
+                                <p className="text-sm text-gray-600">Memory Cache Size</p>
+                                <p className="text-lg font-semibold">
+                                    {cacheService.formatMemorySize(metrics.memory_cache_size || 0)}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                            <FaDatabase className="text-purple-500" />
+                            <div>
+                                <p className="text-sm text-gray-600">Max Memory Size</p>
+                                <p className="text-lg font-semibold">
+                                    {cacheService.formatMemorySize(metrics.max_memory_size || 0)}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                            <FaChartPie className="text-green-500" />
+                            <div>
+                                <p className="text-sm text-gray-600">Utilization</p>
+                                <p className="text-lg font-semibold">
+                                    {(metrics.memory_utilization * 100).toFixed(1)}%
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </Card>
             )}
@@ -426,33 +501,14 @@ export default function CacheManagement() {
                             >
                                 <div className="flex-1">
                                     <p className="font-medium text-lg">{namespace.name}</p>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+                                    <p className="text-sm text-gray-600">{namespace.description}</p>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
                                         <div>
-                                            <p className="text-xs text-gray-600">Hit Rate</p>
-                                            <p className="text-sm font-semibold text-green-600">
-                                                {calculateHitRate(namespace.hits, namespace.misses)}%
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-gray-600">Hits</p>
+                                            <p className="text-xs text-gray-600">Default TTL</p>
                                             <p className="text-sm font-semibold">
-                                                {namespace.hits || 0}
+                                                {namespace.default_ttl}s
                                             </p>
                                         </div>
-                                        <div>
-                                            <p className="text-xs text-gray-600">Misses</p>
-                                            <p className="text-sm font-semibold">
-                                                {namespace.misses || 0}
-                                            </p>
-                                        </div>
-                                        {namespace.ttl && (
-                                            <div>
-                                                <p className="text-xs text-gray-600">TTL</p>
-                                                <p className="text-sm font-semibold">
-                                                    {namespace.ttl}s
-                                                </p>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                                 <Button
