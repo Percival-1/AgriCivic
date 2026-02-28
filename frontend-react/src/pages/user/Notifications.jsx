@@ -457,6 +457,8 @@ export default function Notifications() {
                                         </p>
                                     </div>
                                     <input
+                                        id="email-notifications"
+                                        name="email_notifications"
                                         type="checkbox"
                                         checked={preferences.preferred_channels?.includes('email') || false}
                                         onChange={(e) => {
@@ -482,6 +484,8 @@ export default function Notifications() {
                                         </p>
                                     </div>
                                     <input
+                                        id="sms-notifications"
+                                        name="sms_notifications"
                                         type="checkbox"
                                         checked={preferences.preferred_channels?.includes('sms') || false}
                                         onChange={(e) => {
@@ -507,6 +511,8 @@ export default function Notifications() {
                                         </p>
                                     </div>
                                     <input
+                                        id="weather-alerts"
+                                        name="weather_alerts"
                                         type="checkbox"
                                         checked={preferences.weather_alerts || false}
                                         onChange={(e) =>
@@ -527,6 +533,8 @@ export default function Notifications() {
                                         </p>
                                     </div>
                                     <input
+                                        id="msp-updates"
+                                        name="msp_updates"
                                         type="checkbox"
                                         checked={preferences.daily_msp_updates || false}
                                         onChange={(e) =>
@@ -547,6 +555,8 @@ export default function Notifications() {
                                         </p>
                                     </div>
                                     <input
+                                        id="market-alerts"
+                                        name="market_alerts"
                                         type="checkbox"
                                         checked={preferences.market_price_alerts || false}
                                         onChange={(e) =>
@@ -567,6 +577,8 @@ export default function Notifications() {
                                         </p>
                                     </div>
                                     <input
+                                        id="scheme-notifications"
+                                        name="scheme_notifications"
                                         type="checkbox"
                                         checked={preferences.scheme_notifications || false}
                                         onChange={(e) =>

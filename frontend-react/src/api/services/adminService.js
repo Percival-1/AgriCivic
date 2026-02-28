@@ -5,7 +5,7 @@ class AdminService {
      * Get system statistics for admin dashboard
      */
     async getSystemStats() {
-        const response = await axios.get('/admin/stats');
+        const response = await axios.get('/api/v1/admin/stats');
         return response.data;
     }
 
@@ -13,7 +13,7 @@ class AdminService {
      * Get recent activity logs
      */
     async getRecentActivity(limit = 10) {
-        const response = await axios.get('/admin/activity', {
+        const response = await axios.get('/api/v1/admin/activity', {
             params: { limit },
         });
         return response.data;
@@ -23,7 +23,7 @@ class AdminService {
      * Get all users with pagination
      */
     async getUsers(page = 1, limit = 20, search = '', filters = {}) {
-        const response = await axios.get('/admin/users', {
+        const response = await axios.get('/api/v1/admin/users', {
             params: {
                 page,
                 limit,
@@ -38,7 +38,7 @@ class AdminService {
      * Get user details by ID
      */
     async getUserDetails(userId) {
-        const response = await axios.get(`/admin/users/${userId}`);
+        const response = await axios.get(`/api/v1/admin/users/${userId}`);
         return response.data;
     }
 
@@ -46,7 +46,7 @@ class AdminService {
      * Get user activity logs
      */
     async getUserActivityLogs(userId, page = 1, limit = 20) {
-        const response = await axios.get(`/admin/users/${userId}/activity`, {
+        const response = await axios.get(`/api/v1/admin/users/${userId}/activity`, {
             params: { page, limit },
         });
         return response.data;
@@ -56,7 +56,7 @@ class AdminService {
      * Activate user account
      */
     async activateUser(userId) {
-        const response = await axios.post(`/admin/users/${userId}/activate`);
+        const response = await axios.post(`/api/v1/admin/users/${userId}/activate`);
         return response.data;
     }
 
@@ -64,7 +64,7 @@ class AdminService {
      * Deactivate user account
      */
     async deactivateUser(userId) {
-        const response = await axios.post(`/admin/users/${userId}/deactivate`);
+        const response = await axios.post(`/api/v1/admin/users/${userId}/deactivate`);
         return response.data;
     }
 
@@ -72,7 +72,7 @@ class AdminService {
      * Export user data
      */
     async exportUserData(userId, format = 'json') {
-        const response = await axios.get(`/admin/users/${userId}/export`, {
+        const response = await axios.get(`/api/v1/admin/users/${userId}/export`, {
             params: { format },
             responseType: 'blob',
         });
@@ -83,7 +83,7 @@ class AdminService {
      * Get user statistics
      */
     async getUserStats() {
-        const response = await axios.get('/admin/users/stats');
+        const response = await axios.get('/api/v1/admin/users/stats');
         return response.data;
     }
 }

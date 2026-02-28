@@ -143,7 +143,10 @@ axiosInstance.interceptors.response.use(
 
         // Handle other error responses
         const errorResponse = {
-            message: error.response?.data?.message || error.response?.data?.detail || 'An error occurred',
+            message: error.response?.data?.error?.message ||
+                error.response?.data?.message ||
+                error.response?.data?.detail ||
+                'An error occurred',
             status: error.response?.status,
             data: error.response?.data,
             originalError: error

@@ -281,6 +281,8 @@ export default function SpeechServices() {
                             Select Language
                         </label>
                         <select
+                            id="language-select"
+                            name="language"
                             value={selectedLanguage}
                             onChange={(e) => setSelectedLanguage(e.target.value)}
                             className="w-full md:w-64 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"

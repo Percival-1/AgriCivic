@@ -69,13 +69,13 @@ celery_app.conf.beat_schedule = {
     # Daily MSP updates - TESTING: every 5 minutes (change back to: crontab(hour=8, minute=0))
     "send-daily-msp-updates": {
         "task": "app.tasks.notifications.send_daily_msp_updates",
-        "schedule": crontab(minute="*/5"),  # Every 5 minutes for testing
+        "schedule": crontab(hour="*/3"),  # Every 5 minutes for testing
         "options": {"queue": "notifications"},
     },
     # Weather alerts - TESTING: every 5 minutes (change back to: crontab(minute=0, hour="*/3"))
     "process-weather-alerts": {
         "task": "app.tasks.notifications.process_weather_alerts",
-        "schedule": crontab(minute="*/5"),  # Every 5 minutes for testing
+        "schedule": crontab(hour="*/3"),  # Every 5 minutes for testing
         "options": {"queue": "notifications"},
     },
     # Session cleanup every hour
@@ -87,7 +87,7 @@ celery_app.conf.beat_schedule = {
     # Notification retry processing every 15 minutes
     "retry-failed-notifications": {
         "task": "app.tasks.notifications.retry_failed_notifications",
-        "schedule": crontab(minute="*/15"),
+        "schedule": crontab(hour="*/15"),
         "options": {"queue": "notifications"},
     },
     # Notification analytics aggregation daily at midnight

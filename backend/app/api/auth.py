@@ -147,6 +147,14 @@ class UserResponse(BaseModel):
         )
 
 
+class RegisterResponse(BaseModel):
+    """Registration response with token and user data."""
+
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
+
+
 class APIKeyCreate(BaseModel):
     """API key creation request."""
 
@@ -195,14 +203,22 @@ class APIKeyResponse(BaseModel):
         )
 
 
+class RegisterResponse(BaseModel):
+    """Registration response with token and user data."""
+
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
+
+
 @router.post(
-    "/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED
+    "/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED
 )
 async def register(
     user_data: UserRegister,
     db: AsyncSession = Depends(get_db),
 ):
-    """Register a new user."""
+    """Register a new user and return access token."""
     # Check if user already exists
     result = await db.execute(
         select(User).where(User.phone_number == user_data.phone_number)
@@ -235,7 +251,17 @@ async def register(
     await db.commit()
     await db.refresh(new_user)
 
-    return UserResponse.from_orm(new_user)
+    # Generate access token for the new user
+    access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
+    access_token = auth_service.create_access_token(
+        data={"sub": str(new_user.id)}, expires_delta=access_token_expires
+    )
+
+    return RegisterResponse(
+        access_token=access_token,
+        token_type="bearer",
+        user=UserResponse.from_orm(new_user),
+    )
 
 
 @router.post("/login", response_model=Token)
@@ -281,6 +307,16 @@ async def login(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
+@router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout():
+    """Logout current user (invalidate token on client side)."""
+    # In a JWT-based system, logout is primarily handled client-side
+    # by removing the token. This endpoint exists for consistency
+    # and can be extended to maintain a token blacklist if needed.
+    # No authentication required since token might be expired
+    return {"message": "Successfully logged out"}
+
+
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_info(
     current_user: User = Depends(get_current_user),
@@ -358,110 +394,6 @@ class UserUpdate(BaseModel):
         if v:
             return input_validator.sanitize_string(v, max_length=100)
         return v
-
-
-@router.patch("/me", response_model=UserResponse)
-async def update_current_user(
-    user_update: UserUpdate,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """Update current user profile."""
-    # Update only provided fields
-    update_data = user_update.dict(exclude_unset=True)
-
-    for field, value in update_data.items():
-        # Map frontend field names to backend field names
-        if field == "language":
-            setattr(current_user, "preferred_language", value)
-        elif field == "location":
-            setattr(current_user, "location_address", value)
-        else:
-            setattr(current_user, field, value)
-
-    await db.commit()
-    await db.refresh(current_user)
-
-    return UserResponse.from_orm(current_user)
-
-
-class UserUpdate(BaseModel):
-    """User profile update request."""
-
-    name: Optional[str] = Field(None, max_length=100)
-    location: Optional[str] = Field(None, max_length=200)
-    crops: Optional[list[str]] = Field(None)
-    land_size: Optional[float] = Field(None, gt=0, le=10000)
-    language: Optional[str] = Field(None, max_length=10)
-    phone_number: Optional[str] = Field(None, min_length=10, max_length=15)
-    location_lat: Optional[float] = Field(None, ge=-90, le=90)
-    location_lng: Optional[float] = Field(None, ge=-180, le=180)
-    location_address: Optional[str] = Field(None, max_length=500)
-    district: Optional[str] = Field(None, max_length=100)
-    state: Optional[str] = Field(None, max_length=100)
-
-    @validator("name")
-    def validate_name(cls, v):
-        """Validate and sanitize name."""
-        if v:
-            return input_validator.sanitize_string(v, max_length=100)
-        return v
-
-    @validator("location")
-    def validate_location(cls, v):
-        """Validate and sanitize location."""
-        if v:
-            return input_validator.sanitize_string(v, max_length=200)
-        return v
-
-    @validator("language")
-    def validate_language(cls, v):
-        """Validate language code."""
-        if v:
-            try:
-                return input_validator.validate_language_code(v)
-            except ValueError as e:
-                raise ValueError(str(e))
-        return v
-
-    @validator("phone_number")
-    def validate_phone(cls, v):
-        """Validate phone number format."""
-        if v:
-            try:
-                return input_validator.validate_phone_number(v)
-            except ValueError as e:
-                raise ValueError(str(e))
-        return v
-
-    @validator("location_address")
-    def validate_location_address(cls, v):
-        """Validate and sanitize location address."""
-        if v:
-            return input_validator.sanitize_string(v, max_length=500)
-        return v
-
-    @validator("district")
-    def validate_district(cls, v):
-        """Validate and sanitize district."""
-        if v:
-            return input_validator.sanitize_string(v, max_length=100)
-        return v
-
-    @validator("state")
-    def validate_state(cls, v):
-        """Validate and sanitize state."""
-        if v:
-            return input_validator.sanitize_string(v, max_length=100)
-        return v
-
-
-@router.get("/me", response_model=UserResponse)
-async def get_current_user_info(
-    current_user: User = Depends(get_current_user),
-):
-    """Get current user information."""
-    return UserResponse.from_orm(current_user)
 
 
 @router.patch("/me", response_model=UserResponse)

@@ -92,7 +92,19 @@ export const useAuth = () => {
 
             return { success: true, user: userData };
         } catch (err) {
-            const errorMessage = err.message || 'Login failed. Please check your credentials.';
+            // Extract error message from various possible formats
+            let errorMessage = 'Login failed. Please check your credentials.';
+
+            if (err.message) {
+                errorMessage = err.message;
+            } else if (err.response?.data?.detail) {
+                errorMessage = err.response.data.detail;
+            } else if (err.response?.data?.message) {
+                errorMessage = err.response.data.message;
+            } else if (err.detail) {
+                errorMessage = err.detail;
+            }
+
             dispatch(setError(errorMessage));
             return { success: false, error: errorMessage };
         } finally {
@@ -142,7 +154,19 @@ export const useAuth = () => {
 
             return { success: true, user };
         } catch (err) {
-            const errorMessage = err.message || 'Registration failed. Please try again.';
+            // Extract error message from various possible formats
+            let errorMessage = 'Registration failed. Please try again.';
+
+            if (err.message) {
+                errorMessage = err.message;
+            } else if (err.response?.data?.detail) {
+                errorMessage = err.response.data.detail;
+            } else if (err.response?.data?.message) {
+                errorMessage = err.response.data.message;
+            } else if (err.detail) {
+                errorMessage = err.detail;
+            }
+
             dispatch(setError(errorMessage));
             return { success: false, error: errorMessage };
         } finally {

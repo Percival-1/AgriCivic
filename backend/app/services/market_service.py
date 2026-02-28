@@ -325,14 +325,26 @@ class MarketService:
 
                     # Calculate distance using Maps service if available
                     if self.maps_service:
-                        distance = self.maps_service.calculate_haversine_distance(
-                            location, mandi_location
-                        )
+                        try:
+                            distance = self.maps_service.calculate_haversine_distance(
+                                location, mandi_location
+                            )
+                        except Exception as e:
+                            logger.warning(
+                                f"Maps service distance calculation failed: {e}, using fallback"
+                            )
+                            distance = self._calculate_simple_distance(
+                                location, mandi_location
+                            )
                     else:
                         # Fallback to simple calculation
                         distance = self._calculate_simple_distance(
                             location, mandi_location
                         )
+
+                    logger.debug(
+                        f"Mandi {mp.mandi_name}: distance={distance:.2f}km, radius={radius_km}km"
+                    )
 
                     if distance <= radius_km:
                         crop_price = CropPrice(
@@ -353,6 +365,7 @@ class MarketService:
                             ),
                         )
                         crop_prices.append(crop_price)
+                        logger.debug(f"Added {mp.mandi_name} to results")
 
             # Cache the results
             cache_data = self._serialize_crop_prices(crop_prices)

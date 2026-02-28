@@ -389,6 +389,8 @@ export default function Market() {
                     {/* Filters */}
                     <div className="flex gap-2 items-center flex-wrap">
                         <select
+                            id="crop-select"
+                            name="crop"
                             value={selectedCrop}
                             onChange={(e) => handleCropChange(e.target.value)}
                             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -409,6 +411,8 @@ export default function Market() {
                         </select>
 
                         <select
+                            id="location-select"
+                            name="location"
                             value={selectedLocation}
                             onChange={(e) => handleLocationChange(e.target.value)}
                             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"

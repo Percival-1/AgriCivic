@@ -359,7 +359,7 @@ app.include_router(performance.router, prefix="/api/v1", tags=["performance"])
 # Import and include Admin router
 from app.api import admin
 
-app.include_router(admin.router, prefix="/admin", tags=["admin"])
+app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
 
 # Mount static files directory
 import os

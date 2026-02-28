@@ -99,8 +99,12 @@ class BaseService {
         if (error.response?.data) {
             const data = error.response.data;
 
+            // Handle custom error format { error: { message: "..." } }
+            if (data.error && data.error.message) {
+                errorMessage = data.error.message;
+            }
             // Handle Pydantic validation errors (array of error objects)
-            if (Array.isArray(data.detail)) {
+            else if (Array.isArray(data.detail)) {
                 errorMessage = data.detail.map(err => err.msg || JSON.stringify(err)).join(', ');
             }
             // Handle string detail
