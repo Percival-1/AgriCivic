@@ -139,11 +139,15 @@ export default function Dashboard() {
             setLoadingSchemes(true);
             setSchemesError(null);
             try {
-                const data = await schemeService.getRecommendations(profile);
+                const userId = profile?.id || 'anonymous';
+                const state = profile?.state || null;
+                const language = profile?.language || 'en';
+
+                const response = await schemeService.getSchemesForUser(userId, state, language);
                 // Ensure schemes is always an array
-                const schemesArray = Array.isArray(data)
-                    ? data
-                    : (Array.isArray(data.schemes) ? data.schemes : []);
+                const schemesArray = Array.isArray(response.schemes)
+                    ? response.schemes
+                    : (Array.isArray(response) ? response : []);
                 setSchemes(schemesArray);
                 setStats(prev => ({ ...prev, activeSchemes: schemesArray.length }));
             } catch (error) {
