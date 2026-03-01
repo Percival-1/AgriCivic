@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FaMapMarkedAlt, FaRoute, FaCalculator } from 'react-icons/fa';
 import { Card } from '../../components/common';
 import { GeocodingSearch, RouteMap, DistanceCalculator } from '../../components/maps';
@@ -14,6 +15,7 @@ import { GeocodingSearch, RouteMap, DistanceCalculator } from '../../components/
  * Requirements: 24.1-24.6
  */
 export default function MapsDemo() {
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('geocoding');
     const [selectedLocation, setSelectedLocation] = useState(null);
     const [routeOrigin, setRouteOrigin] = useState(null);
@@ -21,9 +23,9 @@ export default function MapsDemo() {
     const [showRoute, setShowRoute] = useState(false);
 
     const tabs = [
-        { id: 'geocoding', label: 'Geocoding Search', icon: FaMapMarkedAlt },
-        { id: 'route', label: 'Route Display', icon: FaRoute },
-        { id: 'distance', label: 'Distance Calculator', icon: FaCalculator }
+        { id: 'geocoding', label: t('maps.geocodingSearch'), icon: FaMapMarkedAlt },
+        { id: 'route', label: t('maps.routeDisplay'), icon: FaRoute },
+        { id: 'distance', label: t('maps.distanceCalculator'), icon: FaCalculator }
     ];
 
     /**
@@ -52,9 +54,9 @@ export default function MapsDemo() {
         <div className="p-6 space-y-6">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-bold text-gray-800">Maps & Location Services</h1>
+                <h1 className="text-3xl font-bold text-gray-800">{t('maps.title')}</h1>
                 <p className="text-sm text-gray-600 mt-1">
-                    Geocoding, routing, and distance calculation features
+                    {t('maps.subtitle')}
                 </p>
             </div>
 
@@ -66,8 +68,8 @@ export default function MapsDemo() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
-                                    ? 'border-blue-500 text-blue-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                ? 'border-blue-500 text-blue-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                 }`}
                         >
                             <tab.icon />
@@ -81,35 +83,34 @@ export default function MapsDemo() {
             {activeTab === 'geocoding' && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
-                        <h2 className="text-xl font-bold mb-4">Geocoding Search</h2>
+                        <h2 className="text-xl font-bold mb-4">{t('maps.geocodingSearch')}</h2>
                         <p className="text-sm text-gray-600 mb-4">
-                            Search for any address and get its coordinates. The search provides
-                            autocomplete suggestions as you type.
+                            {t('maps.geocodingDesc')}
                         </p>
 
                         <GeocodingSearch
                             onLocationSelect={handleLocationSelect}
-                            placeholder="Search for any location..."
+                            placeholder={t('maps.searchPlaceholder')}
                         />
 
                         {selectedLocation && (
                             <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                                <h3 className="font-bold text-green-800 mb-2">Selected Location</h3>
+                                <h3 className="font-bold text-green-800 mb-2">{t('maps.selectedLocation')}</h3>
                                 <div className="space-y-2 text-sm">
                                     <p>
-                                        <span className="font-medium">Name:</span>{' '}
+                                        <span className="font-medium">{t('maps.name')}</span>{' '}
                                         {selectedLocation.name || 'N/A'}
                                     </p>
                                     <p>
-                                        <span className="font-medium">Address:</span>{' '}
+                                        <span className="font-medium">{t('maps.address')}</span>{' '}
                                         {selectedLocation.address || 'N/A'}
                                     </p>
                                     <p>
-                                        <span className="font-medium">Latitude:</span>{' '}
+                                        <span className="font-medium">{t('maps.latitude')}</span>{' '}
                                         {selectedLocation.latitude?.toFixed(6)}
                                     </p>
                                     <p>
-                                        <span className="font-medium">Longitude:</span>{' '}
+                                        <span className="font-medium">{t('maps.longitude')}</span>{' '}
                                         {selectedLocation.longitude?.toFixed(6)}
                                     </p>
                                 </div>
@@ -118,27 +119,24 @@ export default function MapsDemo() {
                     </Card>
 
                     <Card>
-                        <h2 className="text-xl font-bold mb-4">How It Works</h2>
+                        <h2 className="text-xl font-bold mb-4">{t('maps.howItWorks')}</h2>
                         <div className="space-y-4 text-sm text-gray-700">
                             <div>
-                                <h3 className="font-semibold mb-1">1. Autocomplete</h3>
+                                <h3 className="font-semibold mb-1">{t('maps.step1Title')}</h3>
                                 <p>
-                                    As you type, the system fetches address suggestions from the
-                                    backend API. Minimum 2 characters required.
+                                    {t('maps.step1Desc')}
                                 </p>
                             </div>
                             <div>
-                                <h3 className="font-semibold mb-1">2. Geocoding</h3>
+                                <h3 className="font-semibold mb-1">{t('maps.step2Title')}</h3>
                                 <p>
-                                    When you select a suggestion or press Enter, the address is
-                                    geocoded to get precise latitude and longitude coordinates.
+                                    {t('maps.step2Desc')}
                                 </p>
                             </div>
                             <div>
-                                <h3 className="font-semibold mb-1">3. Validation</h3>
+                                <h3 className="font-semibold mb-1">{t('maps.step3Title')}</h3>
                                 <p>
-                                    The system validates the location coordinates to ensure they
-                                    are within valid ranges and represent real locations.
+                                    {t('maps.step3Desc')}
                                 </p>
                             </div>
                         </div>
@@ -150,23 +148,22 @@ export default function MapsDemo() {
             {activeTab === 'route' && (
                 <div className="space-y-6">
                     <Card>
-                        <h2 className="text-xl font-bold mb-4">Route Display</h2>
+                        <h2 className="text-xl font-bold mb-4">{t('maps.routeDisplay')}</h2>
                         <p className="text-sm text-gray-600 mb-4">
-                            Select origin and destination to display the route on the map with
-                            polylines, distance, and turn-by-turn directions.
+                            {t('maps.routeDesc')}
                         </p>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Origin
+                                    {t('maps.origin')}
                                 </label>
                                 <GeocodingSearch
                                     onLocationSelect={(loc) => {
                                         setRouteOrigin(loc);
                                         setShowRoute(false);
                                     }}
-                                    placeholder="Enter origin..."
+                                    placeholder={t('maps.enterOrigin')}
                                 />
                                 {routeOrigin && (
                                     <div className="mt-2 p-2 bg-green-50 rounded text-sm text-green-800">
@@ -177,14 +174,14 @@ export default function MapsDemo() {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Destination
+                                    {t('maps.destination')}
                                 </label>
                                 <GeocodingSearch
                                     onLocationSelect={(loc) => {
                                         setRouteDestination(loc);
                                         setShowRoute(false);
                                     }}
-                                    placeholder="Enter destination..."
+                                    placeholder={t('maps.enterDestination')}
                                 />
                                 {routeDestination && (
                                     <div className="mt-2 p-2 bg-red-50 rounded text-sm text-red-800">
@@ -199,7 +196,7 @@ export default function MapsDemo() {
                                 onClick={() => setShowRoute(true)}
                                 className="mb-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                             >
-                                Show Route
+                                {t('maps.showRoute')}
                             </button>
                         )}
 
@@ -216,27 +213,24 @@ export default function MapsDemo() {
                     </Card>
 
                     <Card>
-                        <h2 className="text-xl font-bold mb-4">Features</h2>
+                        <h2 className="text-xl font-bold mb-4">{t('maps.features')}</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                             <div className="p-4 bg-blue-50 rounded-lg">
-                                <h3 className="font-semibold mb-2">Polyline Display</h3>
+                                <h3 className="font-semibold mb-2">{t('maps.feature1Title')}</h3>
                                 <p className="text-gray-700">
-                                    Routes are displayed as blue polylines on the map showing the
-                                    exact path between locations.
+                                    {t('maps.feature1Desc')}
                                 </p>
                             </div>
                             <div className="p-4 bg-green-50 rounded-lg">
-                                <h3 className="font-semibold mb-2">Distance & Duration</h3>
+                                <h3 className="font-semibold mb-2">{t('maps.feature2Title')}</h3>
                                 <p className="text-gray-700">
-                                    Automatically calculates and displays the total distance and
-                                    estimated travel time.
+                                    {t('maps.feature2Desc')}
                                 </p>
                             </div>
                             <div className="p-4 bg-purple-50 rounded-lg">
-                                <h3 className="font-semibold mb-2">Turn-by-Turn</h3>
+                                <h3 className="font-semibold mb-2">{t('maps.feature3Title')}</h3>
                                 <p className="text-gray-700">
-                                    Provides step-by-step directions with distance for each turn
-                                    along the route.
+                                    {t('maps.feature3Desc')}
                                 </p>
                             </div>
                         </div>
@@ -248,44 +242,39 @@ export default function MapsDemo() {
             {activeTab === 'distance' && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
-                        <h2 className="text-xl font-bold mb-4">Distance Calculator</h2>
+                        <h2 className="text-xl font-bold mb-4">{t('maps.distanceCalculator')}</h2>
                         <p className="text-sm text-gray-600 mb-4">
-                            Calculate the distance and travel time between two locations using
-                            different travel modes.
+                            {t('maps.distanceDesc')}
                         </p>
 
                         <DistanceCalculator onDistanceCalculated={handleDistanceCalculated} />
                     </Card>
 
                     <Card>
-                        <h2 className="text-xl font-bold mb-4">Travel Modes</h2>
+                        <h2 className="text-xl font-bold mb-4">{t('maps.travelModes')}</h2>
                         <div className="space-y-4">
                             <div className="p-4 bg-gray-50 rounded-lg">
-                                <h3 className="font-semibold mb-2">🚗 Driving</h3>
+                                <h3 className="font-semibold mb-2">{t('maps.driving')}</h3>
                                 <p className="text-sm text-gray-700">
-                                    Calculates distance and time for car travel via roads and
-                                    highways. Best for long distances.
+                                    {t('maps.drivingDesc')}
                                 </p>
                             </div>
                             <div className="p-4 bg-gray-50 rounded-lg">
-                                <h3 className="font-semibold mb-2">🚶 Walking</h3>
+                                <h3 className="font-semibold mb-2">{t('maps.walking')}</h3>
                                 <p className="text-sm text-gray-700">
-                                    Calculates pedestrian routes using sidewalks and pedestrian
-                                    paths. Best for short distances.
+                                    {t('maps.walkingDesc')}
                                 </p>
                             </div>
                             <div className="p-4 bg-gray-50 rounded-lg">
-                                <h3 className="font-semibold mb-2">🚴 Bicycling</h3>
+                                <h3 className="font-semibold mb-2">{t('maps.bicycling')}</h3>
                                 <p className="text-sm text-gray-700">
-                                    Calculates routes suitable for bicycles, including bike lanes
-                                    and paths.
+                                    {t('maps.bicyclingDesc')}
                                 </p>
                             </div>
                             <div className="p-4 bg-gray-50 rounded-lg">
-                                <h3 className="font-semibold mb-2">🚌 Transit</h3>
+                                <h3 className="font-semibold mb-2">{t('maps.transit')}</h3>
                                 <p className="text-sm text-gray-700">
-                                    Calculates routes using public transportation like buses,
-                                    trains, and metro.
+                                    {t('maps.transitDesc')}
                                 </p>
                             </div>
                         </div>

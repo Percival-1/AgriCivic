@@ -1,0 +1,79 @@
+@use './variables.scss' as vars;
+@use './mixins.scss' as mixins;
+
+// Global styles - exclude Vuetify components from reset
+*:not([class*='v-']) {
+    box-sizing: border-box;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: vars.$font-family-base;
+    font-size: vars.$font-size-base;
+    line-height: vars.$line-height-base;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+// Utility classes
+.text-center {
+    text-align: center;
+}
+
+.mt-1 {
+    margin-top: vars.$spacing-unit;
+}
+
+.mt-2 {
+    margin-top: vars.$spacing-unit * 2;
+}
+
+.mt-3 {
+    margin-top: vars.$spacing-unit * 3;
+}
+
+.mt-4 {
+    margin-top: vars.$spacing-unit * 4;
+}
+
+.mb-1 {
+    margin-bottom: vars.$spacing-unit;
+}
+
+.mb-2 {
+    margin-bottom: vars.$spacing-unit * 2;
+}
+
+.mb-3 {
+    margin-bottom: vars.$spacing-unit * 3;
+}
+
+.mb-4 {
+    margin-bottom: vars.$spacing-unit * 4;
+}
+
+.p-1 {
+    padding: vars.$spacing-unit;
+}
+
+.p-2 {
+    padding: vars.$spacing-unit * 2;
+}
+
+.p-3 {
+    padding: vars.$spacing-unit * 3;
+}
+
+.p-4 {
+    padding: vars.$spacing-unit * 4;
+}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import {
     FaCloudSun,
@@ -51,6 +52,7 @@ ChartJS.register(
  * Requirements: 7.1-7.7
  */
 export default function Weather() {
+    const { t } = useTranslation();
     const profile = useSelector(selectProfile);
 
     // Location state
@@ -289,11 +291,11 @@ export default function Weather() {
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-800">Weather Dashboard</h1>
+                        <h1 className="text-3xl font-bold text-gray-800">{t('weather.weatherDashboard')}</h1>
                         {profile?.location && (
                             <p className="text-sm text-gray-600 mt-1">
                                 <FaMapMarkerAlt className="inline mr-1" />
-                                Your location: <span className="font-semibold">{profile.location}</span>
+                                {t('profile.location')}: <span className="font-semibold">{profile.location}</span>
                             </p>
                         )}
                     </div>
@@ -305,11 +307,11 @@ export default function Weather() {
                             value={searchLocation}
                             onChange={(e) => setSearchLocation(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && handleLocationChange()}
-                            placeholder="Search other location..."
+                            placeholder={`${t('common.search')} ${t('weather.changeLocation').toLowerCase()}...`}
                             className="w-64"
                         />
                         <Button onClick={handleLocationChange} disabled={isLoading}>
-                            Search
+                            {t('common.search')}
                         </Button>
                         {!isUsingProfileLocation && profile?.location && (
                             <Button
@@ -317,7 +319,7 @@ export default function Weather() {
                                 disabled={isLoading}
                                 className="bg-gray-500 hover:bg-gray-600"
                             >
-                                My Location
+                                {t('profile.location')}
                             </Button>
                         )}
                     </div>
@@ -328,9 +330,9 @@ export default function Weather() {
                     <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
                         <p className="text-sm text-blue-800">
                             <FaMapMarkerAlt className="inline mr-2" />
-                            Showing weather for: <span className="font-semibold">{currentLocation}</span>
+                            {t('dashboard.weatherStatus').split(' ')[0]} {t('dashboard.forLocation', { location: currentLocation })}
                             {isUsingProfileLocation && (
-                                <span className="ml-2 text-xs bg-blue-200 px-2 py-1 rounded">Your Location</span>
+                                <span className="ml-2 text-xs bg-blue-200 px-2 py-1 rounded">{t('profile.location')}</span>
                             )}
                         </p>
                     </div>
@@ -367,7 +369,7 @@ export default function Weather() {
 
             {/* Current Weather */}
             <Card>
-                <h2 className="text-xl font-bold mb-4">Current Weather</h2>
+                <h2 className="text-xl font-bold mb-4">{t('weather.currentWeather')}</h2>
                 {loadingCurrent ? (
                     <div className="flex justify-center py-8">
                         <ClipLoader color="#3B82F6" size={40} />
@@ -377,7 +379,7 @@ export default function Weather() {
                         <div className="flex items-center gap-4">
                             <FaCloudSun className="text-5xl text-yellow-500" />
                             <div>
-                                <p className="text-sm text-gray-600">Condition</p>
+                                <p className="text-sm text-gray-600">{t('dashboard.condition')}</p>
                                 <p className="text-lg font-semibold">
                                     {currentWeather.description || currentWeather.condition || currentWeather.weather}
                                 </p>
@@ -386,13 +388,13 @@ export default function Weather() {
                         <div className="flex items-center gap-4">
                             <FaTemperatureHigh className="text-5xl text-red-500" />
                             <div>
-                                <p className="text-sm text-gray-600">Temperature</p>
+                                <p className="text-sm text-gray-600">{t('weather.temperature')}</p>
                                 <p className="text-lg font-semibold">
                                     {currentWeather.temperature || currentWeather.temp}°C
                                 </p>
                                 {currentWeather.feels_like && (
                                     <p className="text-xs text-gray-500">
-                                        Feels like {currentWeather.feels_like}°C
+                                        {t('weather.feelsLike')} {currentWeather.feels_like}°C
                                     </p>
                                 )}
                             </div>
@@ -400,7 +402,7 @@ export default function Weather() {
                         <div className="flex items-center gap-4">
                             <FaTint className="text-5xl text-blue-500" />
                             <div>
-                                <p className="text-sm text-gray-600">Humidity</p>
+                                <p className="text-sm text-gray-600">{t('weather.humidity')}</p>
                                 <p className="text-lg font-semibold">
                                     {currentWeather.humidity}%
                                 </p>
@@ -409,7 +411,7 @@ export default function Weather() {
                         <div className="flex items-center gap-4">
                             <FaWind className="text-5xl text-gray-500" />
                             <div>
-                                <p className="text-sm text-gray-600">Wind Speed</p>
+                                <p className="text-sm text-gray-600">{t('weather.windSpeed')}</p>
                                 <p className="text-lg font-semibold">
                                     {currentWeather.wind_speed || currentWeather.windSpeed} km/h
                                 </p>
@@ -422,7 +424,7 @@ export default function Weather() {
                         </div>
                     </div>
                 ) : (
-                    <p className="text-gray-500 text-center py-8">No current weather data available</p>
+                    <p className="text-gray-500 text-center py-8">{t('weather.noWeatherData')}</p>
                 )}
             </Card>
 
@@ -437,7 +439,7 @@ export default function Weather() {
 
             {/* 7-Day Forecast */}
             <Card>
-                <h2 className="text-xl font-bold mb-4">7-Day Forecast</h2>
+                <h2 className="text-xl font-bold mb-4">{t('weather.forecast')}</h2>
                 {loadingForecast ? (
                     <div className="flex justify-center py-8">
                         <ClipLoader color="#3B82F6" size={40} />
@@ -450,7 +452,7 @@ export default function Weather() {
                                 className="bg-gray-50 p-4 rounded-lg text-center hover:bg-gray-100 transition"
                             >
                                 <p className="font-semibold text-sm mb-2">
-                                    {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}
+                                    {new Date(day.date).toLocaleDateString(profile?.language || 'en-US', { weekday: 'short' })}
                                 </p>
                                 <FaCloudSun className="text-3xl text-yellow-500 mx-auto mb-2" />
                                 <p className="text-xs text-gray-600 mb-2">
@@ -480,7 +482,7 @@ export default function Weather() {
                         ))}
                     </div>
                 ) : (
-                    <p className="text-gray-500 text-center py-8">No forecast data available</p>
+                    <p className="text-gray-500 text-center py-8">{t('dashboard.noData')}</p>
                 )}
             </Card>
 
@@ -489,7 +491,7 @@ export default function Weather() {
                 <Card>
                     <div className="flex items-center gap-3 mb-4">
                         <FaSeedling className="text-2xl text-green-600" />
-                        <h2 className="text-xl font-bold">Agricultural Insights</h2>
+                        <h2 className="text-xl font-bold">{t('weather.insights')}</h2>
                     </div>
                     {loadingInsights ? (
                         <div className="flex justify-center py-8">

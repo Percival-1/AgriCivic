@@ -64,6 +64,14 @@ const Header = memo(function Header({ onMenuToggle, isMobileMenuOpen }) {
         };
     }, []);
 
+    // Initialize i18n language from user's profile preference on first load
+    useEffect(() => {
+        const profileLang = profile?.language || profile?.preferred_language;
+        if (profileLang && profileLang !== i18n.language) {
+            i18n.changeLanguage(profileLang);
+        }
+    }, [profile?.language, profile?.preferred_language]);
+
     // Memoize event handlers with useCallback
     const handleLogout = useCallback(async () => {
         setIsUserMenuOpen(false);

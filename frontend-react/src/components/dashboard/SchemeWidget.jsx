@@ -55,39 +55,43 @@ export default function SchemeWidget({ schemes, loading, error }) {
                 </Link>
             </div>
 
-            <div className="space-y-3">
-                {schemesArray.slice(0, 4).map((scheme, index) => (
+            <div className="flex overflow-x-auto pb-4 space-x-4 snap-x snap-mandatory scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                {schemesArray.map((scheme, index) => (
                     <div
                         key={scheme.id || index}
-                        className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                        className="flex-none w-[90%] sm:w-[320px] snap-center bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-300 relative z-10 flex flex-col"
                     >
-                        <div className="flex items-start space-x-3">
-                            <FaFileAlt className="text-blue-500 mt-1 flex-shrink-0" size={20} />
+                        <div className="flex items-start space-x-3 mb-3">
+                            <div className="bg-blue-50 p-2 rounded-lg">
+                                <FaFileAlt className="text-blue-500 flex-shrink-0" size={20} />
+                            </div>
                             <div className="flex-1 min-w-0">
-                                <h3 className="text-sm font-semibold text-gray-800 truncate">
+                                <h3 className="text-base font-semibold text-gray-800 leading-tight">
                                     {scheme.name || scheme.title}
                                 </h3>
-                                <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                                    {scheme.description || scheme.summary || t('dashboard.noData')}
-                                </p>
-                                {scheme.eligible !== undefined && (
-                                    <div className="flex items-center space-x-1 mt-2">
-                                        {scheme.eligible ? (
-                                            <>
-                                                <FaCheckCircle className="text-green-500" size={14} />
-                                                <span className="text-xs text-green-600 font-medium">
-                                                    {t('schemes.youAreEligible')}
-                                                </span>
-                                            </>
-                                        ) : (
-                                            <span className="text-xs text-gray-500">
-                                                {t('schemes.checkEligibility')}
-                                            </span>
-                                        )}
-                                    </div>
-                                )}
                             </div>
                         </div>
+
+                        <p className="text-sm text-gray-600 mb-4 line-clamp-3 flex-1">
+                            {scheme.description || scheme.summary || t('dashboard.noData')}
+                        </p>
+
+                        {scheme.eligible !== undefined && (
+                            <div className="flex items-center mt-auto bg-gray-50 px-3 py-2 rounded-lg">
+                                {scheme.eligible ? (
+                                    <>
+                                        <FaCheckCircle className="text-green-500 mr-2" size={16} />
+                                        <span className="text-sm text-green-700 font-medium">
+                                            {t('schemes.youAreEligible')}
+                                        </span>
+                                    </>
+                                ) : (
+                                    <span className="text-sm text-gray-600 font-medium">
+                                        {t('schemes.checkEligibility')}
+                                    </span>
+                                )}
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>

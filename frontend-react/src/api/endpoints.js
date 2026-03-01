@@ -2,98 +2,98 @@
 export const ENDPOINTS = {
     // Auth
     AUTH: {
-        LOGIN: '/api/v1/auth/login',
-        REGISTER: '/api/v1/auth/register',
-        LOGOUT: '/api/v1/auth/logout',
-        CURRENT_USER: '/api/v1/auth/me',
-        REFRESH: '/api/v1/auth/refresh',
+        LOGIN: '/v1/auth/login',
+        REGISTER: '/v1/auth/register',
+        LOGOUT: '/v1/auth/logout',
+        CURRENT_USER: '/v1/auth/me',
+        REFRESH: '/v1/auth/refresh',
     },
 
     // Chat
     CHAT: {
-        INIT_SESSION: '/chat/init',
-        SEND_MESSAGE: '/chat/message',
-        GET_HISTORY: '/chat/history',
-        END_SESSION: '/chat/end',
+        INIT_SESSION: '/v1/chat/init',
+        SEND_MESSAGE: '/v1/chat/message',
+        GET_HISTORY: '/v1/chat/history',
+        END_SESSION: '/v1/chat/end',
     },
 
     // Vision
     VISION: {
-        ANALYZE: '/vision/analyze',
-        TREATMENT: '/vision/treatment',
+        ANALYZE: '/v1/vision/analyze',
+        TREATMENT: '/v1/vision/treatment',
     },
 
     // Weather
     WEATHER: {
-        CURRENT: '/weather/current',
-        FORECAST: '/weather/forecast',
-        ALERTS: '/weather/alerts',
-        INSIGHTS: '/weather/insights',
+        CURRENT: '/v1/weather/current',
+        FORECAST: '/v1/weather/forecast',
+        ALERTS: '/v1/weather/alerts',
+        INSIGHTS: '/v1/weather/insights',
     },
 
     // Market
     MARKET: {
-        PRICES: '/market/prices',
-        COMPARE: '/market/compare',
-        MANDIS: '/market/mandis',
-        TRENDS: '/market/trends',
-        RECOMMENDATION: '/market/recommendation',
+        PRICES: '/v1/market/prices',
+        COMPARE: '/v1/market/compare',
+        MANDIS: '/v1/market/mandis',
+        TRENDS: '/v1/market/trends',
+        RECOMMENDATION: '/v1/market/recommendation',
     },
 
     // Schemes
     SCHEMES: {
-        SEARCH: '/schemes/search',
-        DETAILS: '/schemes/details',
-        RECOMMENDATIONS: '/schemes/recommendations',
-        ELIGIBILITY: '/schemes/eligibility',
+        SEARCH: '/v1/schemes/search',
+        DETAILS: '/v1/schemes/details',
+        RECOMMENDATIONS: '/v1/schemes/recommendations',
+        ELIGIBILITY: '/v1/schemes/eligibility',
     },
 
     // Notifications
     NOTIFICATIONS: {
-        LIST: '/notifications',
-        MARK_READ: '/notifications/read',
-        PREFERENCES: '/notifications/preferences',
+        LIST: '/v1/notifications',
+        MARK_READ: '/v1/notifications/read',
+        PREFERENCES: '/v1/notifications/preferences',
     },
 
     // Speech
     SPEECH: {
-        TRANSCRIBE: '/speech/transcribe',
-        SYNTHESIZE: '/speech/synthesize',
-        FORMATS: '/speech/formats',
-        LANGUAGES: '/speech/languages',
-        VOICES: '/speech/voices',
+        TRANSCRIBE: '/v1/speech/transcribe',
+        SYNTHESIZE: '/v1/speech/synthesize',
+        FORMATS: '/v1/speech/formats',
+        LANGUAGES: '/v1/speech/languages',
+        VOICES: '/v1/speech/voices',
     },
 
     // Translation
     TRANSLATION: {
-        TRANSLATE: '/translation/translate',
-        BATCH: '/translation/batch',
-        DETECT: '/translation/detect',
-        LANGUAGES: '/translation/languages',
+        TRANSLATE: '/v1/translation/translate',
+        BATCH: '/v1/translation/batch',
+        DETECT: '/v1/translation/detect',
+        LANGUAGES: '/v1/translation/languages',
     },
 
     // Admin
     ADMIN: {
-        USERS: '/admin/users',
-        MONITORING: '/api/v1/monitoring',
-        CACHE: '/admin/cache',
-        PERFORMANCE: '/api/v1/performance',
+        USERS: '/v1/admin/users',
+        MONITORING: '/v1/monitoring',
+        CACHE: '/v1/admin/cache',
+        PERFORMANCE: '/v1/performance',
     },
 
     // Cache
     CACHE: {
-        METRICS: '/api/v1/cache/metrics',
-        INVALIDATE: '/api/v1/cache/invalidate',
-        HEALTH: '/api/v1/cache/health',
-        NAMESPACES: '/api/v1/cache/namespaces',
-        RESET_METRICS: '/api/v1/cache/reset-metrics',
+        METRICS: '/v1/cache/metrics',
+        INVALIDATE: '/v1/cache/invalidate',
+        HEALTH: '/v1/cache/health',
+        NAMESPACES: '/v1/cache/namespaces',
+        RESET_METRICS: '/v1/cache/reset-metrics',
     },
 
     // LLM
     LLM: {
-        METRICS: '/api/v1/llm/metrics',
-        HEALTH: '/api/v1/llm/health',
-        PROVIDERS: '/api/v1/llm/providers',
-        RESET_METRICS: '/api/v1/llm/metrics/reset',
+        METRICS: '/v1/llm/metrics',
+        HEALTH: '/v1/llm/health',
+        PROVIDERS: '/v1/llm/providers',
+        RESET_METRICS: '/v1/llm/metrics/reset',
     },
 }

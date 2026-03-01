@@ -18,15 +18,15 @@ export default function WelcomeCard({ user }) {
         dispatch(toggleWelcomeMessage());
     };
 
-    const getGreeting = () => {
-        const hour = new Date().getHours();
-        if (hour < 12) return t('dashboard.goodMorning');
-        if (hour < 18) return t('dashboard.goodAfternoon');
-        return t('dashboard.goodEvening');
-    };
-
     // Use profile name first, then user name, then phone number, then generic greeting
     const userName = profile?.name || user?.name || user?.phone_number || t('common.welcome');
+
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+        if (hour < 12) return t('dashboard.goodMorning', { name: userName });
+        if (hour < 18) return t('dashboard.goodAfternoon', { name: userName });
+        return t('dashboard.goodEvening', { name: userName });
+    };
 
     return (
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-lg p-6 relative">
@@ -39,7 +39,7 @@ export default function WelcomeCard({ user }) {
             </button>
 
             <h1 className="text-3xl font-bold mb-2">
-                {getGreeting().replace('{{name}}', userName)}
+                {getGreeting()}
             </h1>
             <p className="text-blue-100 text-lg">
                 {t('dashboard.welcomeGreeting')}

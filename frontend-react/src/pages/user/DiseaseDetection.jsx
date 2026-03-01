@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FaUpload, FaImage, FaTimes, FaLeaf, FaInfoCircle, FaSave, FaShare, FaCamera } from 'react-icons/fa';
 import { Doughnut, Bar } from 'react-chartjs-2';
 import {
@@ -29,6 +30,7 @@ ChartJS.register(
 );
 
 export default function DiseaseDetection() {
+    const { t } = useTranslation();
     const [selectedFile, setSelectedFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -342,10 +344,10 @@ export default function DiseaseDetection() {
             <div className="mb-6">
                 <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
                     <FaLeaf className="text-green-600" />
-                    Disease Detection
+                    {t('disease.diseaseDetection')}
                 </h1>
                 <p className="text-gray-600 mt-2">
-                    Upload a crop image to detect diseases and get treatment recommendations
+                    {t('disease.uploadCropImage')}
                 </p>
             </div>
 
@@ -361,7 +363,7 @@ export default function DiseaseDetection() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Upload Section */}
-                <Card title="Upload Image">
+                <Card title={t('disease.uploadImage')}>
                     <div className="space-y-4">
                         {/* Camera Modal */}
                         {isCameraOpen && (
@@ -429,7 +431,7 @@ export default function DiseaseDetection() {
                                     <FaImage className="mx-auto text-gray-400 text-5xl" />
                                     <div>
                                         <p className="text-gray-600 mb-3">
-                                            Drag and drop an image here, or
+                                            {t('disease.dragDrop')} {t('disease.or')}
                                         </p>
                                         <div className="flex flex-col sm:flex-row gap-2 justify-center">
                                             <Button
@@ -438,7 +440,7 @@ export default function DiseaseDetection() {
                                                 onClick={() => fileInputRef.current?.click()}
                                             >
                                                 <FaUpload className="mr-2" />
-                                                Browse Files
+                                                {t('disease.browseFiles')}
                                             </Button>
                                             <Button
                                                 variant="outline"
@@ -469,7 +471,7 @@ export default function DiseaseDetection() {
                         {isUploading && (
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between text-sm">
-                                    <span className="text-gray-600">Analyzing image...</span>
+                                    <span className="text-gray-600">{t('disease.analyzing')}</span>
                                     <span className="text-gray-900 font-medium">
                                         {uploadProgress}%
                                     </span>
@@ -494,10 +496,10 @@ export default function DiseaseDetection() {
                                     className="flex-1"
                                     onClick={handleAnalyze}
                                 >
-                                    Analyze Image
+                                    {t('disease.analyzeImage')}
                                 </Button>
                                 <Button variant="secondary" onClick={handleClear}>
-                                    Clear
+                                    {t('common.cancel') || 'Clear'}
                                 </Button>
                             </div>
                         )}
@@ -512,7 +514,7 @@ export default function DiseaseDetection() {
 
                 {/* Results Section */}
                 {analysisResult && primaryDisease && (
-                    <Card title="Analysis Results">
+                    <Card title={t('disease.results')}>
                         <div className="space-y-6">
                             {/* Action Buttons */}
                             <div className="flex gap-2">
@@ -557,7 +559,7 @@ export default function DiseaseDetection() {
                             {/* Confidence Score */}
                             <div>
                                 <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                                    Confidence Score
+                                    {t('disease.confidenceLevel')}
                                 </h3>
                                 <div className="flex items-center gap-6">
                                     <div className="w-32 h-32">
@@ -663,7 +665,7 @@ export default function DiseaseDetection() {
 
             {/* Treatment Recommendations */}
             {analysisResult?.treatment_recommendations && analysisResult.treatment_recommendations.length > 0 && (
-                <Card title="Treatment Recommendations" className="mt-6">
+                <Card title={t('disease.treatment')} className="mt-6">
                     <div className="space-y-4">
                         {analysisResult.treatment_recommendations.map((treatment, index) => (
                             <details key={index} className="border border-gray-200 rounded-lg">
@@ -725,7 +727,7 @@ export default function DiseaseDetection() {
 
             {/* Prevention Strategies */}
             {analysisResult?.prevention_strategies && analysisResult.prevention_strategies.length > 0 && (
-                <Card title="Prevention Strategies" className="mt-6">
+                <Card title={t('disease.preventiveMeasures')} className="mt-6">
                     <ul className="list-disc list-inside space-y-2 text-gray-700">
                         {analysisResult.prevention_strategies.map((strategy, index) => (
                             <li key={index}>{strategy}</li>
@@ -771,7 +773,7 @@ export default function DiseaseDetection() {
 
             {/* Detailed Treatment */}
             {detailedTreatment && (
-                <Card title="Detailed Treatment Information" className="mt-6">
+                <Card title={t('disease.detailedTreatment')} className="mt-6">
                     <div className="prose max-w-none">
                         <pre className="whitespace-pre-wrap text-sm text-gray-700 bg-gray-50 p-4 rounded">
                             {JSON.stringify(detailedTreatment, null, 2)}

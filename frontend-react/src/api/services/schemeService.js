@@ -3,13 +3,12 @@ import BaseService from './BaseService';
 
 /**
  * Scheme Service
- * Handles all government scheme API calls
- * Redesigned for auto-load based on user profile
  */
 class SchemeService extends BaseService {
     constructor() {
         super();
-        this.baseURL = '/api/v1/schemes';
+        // 🔥 FIX: Removed /api from baseURL
+        this.baseURL = '/v1/schemes';
     }
 
     /**
@@ -28,72 +27,58 @@ class SchemeService extends BaseService {
         return response.data;
     }
 
-    /**
-     * Search schemes
-     * POST /api/v1/schemes/search with body: { query, user_profile?, top_k? }
-     */
-    async searchSchemes(query, userProfile = null) {
+
+
+    async searchSchemes(query, filters = {}) {
         const requestBody = {
             query: query || 'government schemes for farmers',
             top_k: 20,
-            user_profile: userProfile ? this._buildUserProfile(userProfile) : null
+            scheme_types: filters.type ? [filters.type] : null,
+            user_profile: null
         };
-
         const response = await axios.post(`${this.baseURL}/search`, requestBody);
         return response.data;
     }
 
-    /**
-     * Get scheme details
-     * POST /api/v1/schemes/details with body: { scheme_name, user_profile? }
-     */
-    async getSchemeDetails(schemeId, userProfile = null) {
-        const requestBody = {
-            scheme_name: schemeId,
-            user_profile: userProfile ? this._buildUserProfile(userProfile) : null
-        };
-
+    async getSchemeDetails(schemeId) {
+        const requestBody = { scheme_name: schemeId, user_profile: null };
         const response = await axios.post(`${this.baseURL}/details`, requestBody);
         return response.data;
     }
 
-    /**
-     * Prepare chat context for scheme
-     * NEW: POST /api/v1/schemes/{scheme_id}/chat-context
-     */
-    async prepareChatContext(schemeId, userProfile = null) {
-        const requestBody = {
-            user_profile: userProfile ? this._buildUserProfile(userProfile) : null
+    async getRecommendations(userProfile = null) {
+        const profileData = userProfile ? {
+            user_id: userProfile.id || 'anonymous',
+            location: (userProfile.state || userProfile.district || userProfile.location_address) ? {
+                state: userProfile.state || '',
+                district: userProfile.district || '',
+                address: userProfile.location_address || userProfile.location || '',
+                latitude: userProfile.location_lat || null,
+                longitude: userProfile.location_lng || null
+            } : null,
+            crops: userProfile.crops || null,
+            land_size_hectares: userProfile.land_size || userProfile.landSize || null,
+            farmer_category: userProfile.farmer_category || 'small',
+            annual_income: userProfile.income || null,
+            age: userProfile.age || null,
+            gender: userProfile.gender || null,
+            caste_category: userProfile.caste_category || null,
+            has_bank_account: true,
+            has_aadhaar: true,
+            additional_attributes: null
+        } : {
+            user_id: 'anonymous', location: null, crops: null, land_size_hectares: null,
+            farmer_category: 'small', annual_income: null, age: null, gender: null,
+            caste_category: null, has_bank_account: true, has_aadhaar: true, additional_attributes: null
         };
 
-        // URL encode the scheme ID to handle special characters
-        const encodedSchemeId = encodeURIComponent(schemeId);
-
-        const response = await axios.post(`${this.baseURL}/${encodedSchemeId}/chat-context`, requestBody);
+        const requestBody = { user_profile: profileData, limit: 10 };
+        const response = await axios.post(`${this.baseURL}/recommendations`, requestBody);
         return response.data;
     }
 
-    /**
-     * Check eligibility for a scheme
-     * POST /api/v1/schemes/eligibility/check with body: { scheme_name, user_profile }
-     */
     async checkEligibility(schemeId, userProfile) {
-        const requestBody = {
-            scheme_name: schemeId,
-            user_profile: this._buildUserProfile(userProfile)
-        };
-
-        const response = await axios.post(`${this.baseURL}/eligibility/check`, requestBody);
-        return response.data;
-    }
-
-    /**
-     * Helper: Build user profile object
-     */
-    _buildUserProfile(userProfile) {
-        if (!userProfile) return null;
-
-        return {
+        const profileData = {
             user_id: userProfile.id || 'anonymous',
             location: (userProfile.state || userProfile.district || userProfile.location_address) ? {
                 state: userProfile.state || '',
@@ -114,6 +99,10 @@ class SchemeService extends BaseService {
             language: userProfile.language || 'en',
             additional_attributes: null
         };
+
+        const requestBody = { scheme_name: schemeId, user_profile: profileData };
+        const response = await axios.post(`${this.baseURL}/eligibility/check`, requestBody);
+        return response.data;
     }
 }
 

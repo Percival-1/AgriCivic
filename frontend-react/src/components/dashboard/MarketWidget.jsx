@@ -66,32 +66,37 @@ export default function MarketWidget({ data, loading, error, crops }) {
                 </div>
 
                 {/* Price Information */}
-                {prices.slice(0, 3).map((price, index) => {
-                    const priceChange = price.change || price.price_change || 0;
-                    const isPositive = priceChange >= 0;
+                <div className="space-y-3 relative">
+                    {prices.slice(0, 3).map((price, index) => {
+                        const priceChange = price.change || price.price_change || 0;
+                        const isPositive = priceChange >= 0;
 
-                    return (
-                        <div key={index} className="border-b pb-3 last:border-b-0">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-gray-600">
-                                        {price.mandi || price.market || t('market.location')}
-                                    </p>
-                                    <p className="text-2xl font-bold text-gray-800">
-                                        ₹{price.price || price.current_price || t('dashboard.noData')}
-                                        <span className="text-sm text-gray-500 font-normal">{t('dashboard.perQuintal')}</span>
-                                    </p>
-                                </div>
-                                <div className={`flex items-center space-x-1 ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                                    {isPositive ? <FaArrowUp size={16} /> : <FaArrowDown size={16} />}
-                                    <span className="font-semibold">
-                                        {Math.abs(priceChange)}%
-                                    </span>
+                        return (
+                            <div
+                                key={index}
+                                className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative z-10"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm text-gray-600">
+                                            {price.mandi || price.market || t('market.location')}
+                                        </p>
+                                        <p className="text-2xl font-bold text-gray-800">
+                                            ₹{price.price || price.current_price || t('dashboard.noData')}
+                                            <span className="text-sm text-gray-500 font-normal">{t('dashboard.perQuintal')}</span>
+                                        </p>
+                                    </div>
+                                    <div className={`flex items-center space-x-1 ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                                        {isPositive ? <FaArrowUp size={16} /> : <FaArrowDown size={16} />}
+                                        <span className="font-semibold">
+                                            {Math.abs(priceChange)}%
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    );
-                })}
+                        );
+                    })}
+                </div>
 
                 {/* MSP Information if available */}
                 {data.msp && (

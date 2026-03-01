@@ -82,12 +82,12 @@ export default function Sidebar({ isOpen, onClose }) {
             icon: FaBell,
         },
         {
-            name: 'Speech Services',
+            name: t('navigation.speechServices'),
             path: '/speech',
             icon: FaMicrophone,
         },
         {
-            name: 'Maps & Location',
+            name: t('navigation.mapsLocation'),
             path: '/maps',
             icon: FaMapMarkedAlt,
         },
@@ -121,12 +121,12 @@ export default function Sidebar({ isOpen, onClose }) {
             icon: FaChartLine,
         },
         {
-            name: 'Translation Service',
+            name: t('admin.translationService'),
             path: '/admin/translation',
             icon: FaLanguage,
         },
         {
-            name: 'SMS Management',
+            name: t('admin.smsManagement'),
             path: '/admin/sms',
             icon: FaSms,
         },
