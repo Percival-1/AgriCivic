@@ -68,6 +68,9 @@ export default function Register() {
         // Remove confirm_password before sending to API
         const { confirm_password, ...userData } = data;
 
+        // Auto-prepend +91 country code
+        userData.phone_number = `+91${userData.phone_number.replace(/^\+91/, '')}`;
+
         const result = await registerUser(userData);
 
         if (!result.success) {
@@ -163,21 +166,21 @@ export default function Register() {
                             <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700 mb-1">
                                 Phone Number
                             </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <FaPhone className="h-5 w-5 text-gray-400" />
-                                </div>
+                            <div className="relative flex">
+                                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                                    +91
+                                </span>
                                 <input
                                     id="phone_number"
                                     type="tel"
-                                    placeholder="+1234567890"
-                                    className={`appearance-none block w-full pl-10 pr-3 py-2 border ${errors.phone_number ? 'border-red-300' : 'border-gray-300'
-                                        } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                                    placeholder="9876543210"
+                                    className={`appearance-none block w-full px-3 py-2 border ${errors.phone_number ? 'border-red-300' : 'border-gray-300'
+                                        } rounded-r-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
                                     {...register('phone_number', {
                                         required: 'Phone number is required',
                                         pattern: {
-                                            value: /^\+[1-9]\d{1,14}$/,
-                                            message: 'Please enter a valid phone number in E.164 format (e.g., +1234567890)'
+                                            value: /^[6-9]\d{9}$/,
+                                            message: 'Please enter a valid 10-digit Indian mobile number'
                                         }
                                     })}
                                 />
@@ -185,9 +188,6 @@ export default function Register() {
                             {errors.phone_number && (
                                 <p className="mt-1 text-sm text-red-600">{errors.phone_number.message}</p>
                             )}
-                            <p className="mt-1 text-xs text-gray-500">
-                                Format: +[country code][number] (e.g., +1234567890)
-                            </p>
                         </div>
 
                         {/* Password Field */}
@@ -240,8 +240,8 @@ export default function Register() {
                                     <div className="flex items-center justify-between mb-1">
                                         <span className="text-xs text-gray-600">Password Strength:</span>
                                         <span className={`text-xs font-medium ${passwordStrength.label === 'Strong' ? 'text-green-600' :
-                                                passwordStrength.label === 'Medium' ? 'text-yellow-600' :
-                                                    'text-red-600'
+                                            passwordStrength.label === 'Medium' ? 'text-yellow-600' :
+                                                'text-red-600'
                                             }`}>
                                             {passwordStrength.label}
                                         </span>
